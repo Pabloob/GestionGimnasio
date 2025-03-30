@@ -1,13 +1,22 @@
 package com.gestiongimnasio.backend.controller;
 
-import com.gestiongimnasio.backend.dto.InscripcionDTO;
-import com.gestiongimnasio.backend.service.InscripcionService;
+import java.util.List;
+
+import com.gestiongimnasio.backend.dto.get.InscripcionGetDTO;
+import com.gestiongimnasio.backend.dto.post.InscripcionPostDTO;
+import com.gestiongimnasio.backend.dto.put.InscripcionPutDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import com.gestiongimnasio.backend.service.InscripcionService;
 
 @RestController
 @RequestMapping("/api/inscripciones")
@@ -20,53 +29,58 @@ public class InscripcionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<InscripcionDTO>> getAllInscripciones() {
-        List<InscripcionDTO> inscripciones = inscripcionService.getAllInscripciones();
+    public ResponseEntity<List<InscripcionGetDTO>> getAll() {
+        List<InscripcionGetDTO> inscripciones = inscripcionService.getAll();
         return ResponseEntity.ok(inscripciones);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<InscripcionDTO> getInscripcionById(@PathVariable Integer id) {
-        InscripcionDTO inscripcion = inscripcionService.getInscripcionById(id);
-        return ResponseEntity.ok(inscripcion);
-    }
-
-    @PostMapping
-    public ResponseEntity<InscripcionDTO> createInscripcion(@RequestBody InscripcionDTO inscripcionDTO) {
-        InscripcionDTO nuevaInscripcion = inscripcionService.saveInscripcion(inscripcionDTO);
-        return new ResponseEntity<>(nuevaInscripcion, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<InscripcionDTO> updateInscripcion(@PathVariable Integer id, @RequestBody InscripcionDTO inscripcionDTO) {
-        InscripcionDTO updatedInscripcion = inscripcionService.updateInscripcion(id, inscripcionDTO);
-        return ResponseEntity.ok(updatedInscripcion);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInscripcion(@PathVariable Integer id) {
-        inscripcionService.deleteInscripcion(id);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/cliente/{clienteId}")
-    public ResponseEntity<List<InscripcionDTO>> getInscripcionesByCliente(@PathVariable Long clienteId) {
-        List<InscripcionDTO> inscripciones = inscripcionService.getInscripcionesByCliente(clienteId);
+    public ResponseEntity<List<InscripcionGetDTO>> getByCliente(@PathVariable Long clienteId) {
+        List<InscripcionGetDTO> inscripciones = inscripcionService.getByCliente(clienteId);
         return ResponseEntity.ok(inscripciones);
     }
 
     @GetMapping("/clase/{claseId}")
-    public ResponseEntity<List<InscripcionDTO>> getInscripcionesByClase(@PathVariable Integer claseId) {
-        List<InscripcionDTO> inscripciones = inscripcionService.getInscripcionesByClase(claseId);
+    public ResponseEntity<List<InscripcionGetDTO>> getByClase(@PathVariable Long claseId) {
+        List<InscripcionGetDTO> inscripciones = inscripcionService.getByClase(claseId);
         return ResponseEntity.ok(inscripciones);
     }
 
-    @PutMapping("/{id}/pago")
-    public ResponseEntity<InscripcionDTO> marcarComoPagado(@PathVariable Integer id, @RequestParam boolean pagado) {
-        InscripcionDTO inscripcion = inscripcionService.getInscripcionById(id);
-        inscripcion.setEstadoPago(pagado);
-        InscripcionDTO updatedInscripcion = inscripcionService.updateInscripcion(id, inscripcion);
+    @GetMapping("/{id}")
+    public ResponseEntity<InscripcionGetDTO> getById(@PathVariable Long id) {
+        InscripcionGetDTO inscripcion = inscripcionService.getById(id);
+        return ResponseEntity.ok(inscripcion);
+    }
+
+    @PostMapping
+    public ResponseEntity<InscripcionGetDTO> save(@RequestBody InscripcionPostDTO inscripcionDTO) {
+        InscripcionGetDTO nuevaInscripcion = inscripcionService.save(inscripcionDTO);
+        return new ResponseEntity<>(nuevaInscripcion, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<InscripcionGetDTO> update(@PathVariable Long id, @RequestBody InscripcionPutDTO inscripcionDTO) {
+        InscripcionGetDTO updatedInscripcion = inscripcionService.update(id, inscripcionDTO);
         return ResponseEntity.ok(updatedInscripcion);
     }
+
+    @PutMapping("/pago/{id}")
+    public ResponseEntity<InscripcionGetDTO> confirmarPago(@PathVariable Long id, @RequestParam Long idPago) {
+        InscripcionGetDTO inscripcion = inscripcionService.confirmarPago(id, idPago);
+        return ResponseEntity.ok(inscripcion);
+    }
+
+    @PutMapping("/asistencia/{id}")
+    public ResponseEntity<InscripcionGetDTO> confirmarAsistencia(@PathVariable Long id) {
+        InscripcionGetDTO inscripcion = inscripcionService.confirmarAsistencia(id);
+        return ResponseEntity.ok(inscripcion);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        inscripcionService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

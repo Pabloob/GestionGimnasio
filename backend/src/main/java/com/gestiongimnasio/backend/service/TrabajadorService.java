@@ -1,19 +1,23 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.TrabajadorDTO;
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.TrabajadorGetDTO;
+import com.gestiongimnasio.backend.dto.post.TrabajadorPostDTO;
+import com.gestiongimnasio.backend.dto.put.TrabajadorPutDTO;
 import com.gestiongimnasio.backend.model.Trabajador;
 
 import java.util.List;
 
 public interface TrabajadorService {
-    TrabajadorDTO saveTrabajador(TrabajadorDTO trabajadorDTO);
-    List<TrabajadorDTO> getAllTrabajadores();
-    TrabajadorDTO getTrabajadorById(Long id);
-    TrabajadorDTO updateTrabajador(Long id, TrabajadorDTO trabajadorDTO);
-    void deleteTrabajador(Long id);
-    List<TrabajadorDTO> findByTipo(Trabajador.TipoTrabajador tipo);
+    TrabajadorGetDTO getById(Long id);
 
-    boolean existsByCorreo(String correo);
+    List<TrabajadorGetDTO> getAll();
+    List<TrabajadorGetDTO> getByTipo(Trabajador.TipoTrabajador tipo);
+    List<ClaseGetDTO> getClasesImpartidas(Long instructorId);
 
-    Long authenticateCliente(String correo,String contrasena);
+    TrabajadorGetDTO save(TrabajadorPostDTO registroDTO);
+
+    TrabajadorGetDTO update(Long id, TrabajadorPutDTO updateDTO);
+
+
 }

@@ -1,4 +1,4 @@
-package com.gestiongimnasio.backend.dto.post;
+package com.gestiongimnasio.backend.dto.put;
 
 import com.gestiongimnasio.backend.model.Usuario.TipoUsuario;
 import jakarta.validation.constraints.*;
@@ -11,26 +11,19 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioPostDTO {
-    @NotBlank
+public class UsuarioPutDTO {
+    @NotNull
+    Long id;
+
     @Size(max = 100)
     private String nombre;
-
-    @NotBlank
+    private String contrasena;
     @Email
     private String correo;
-
-    @NotBlank
     @Pattern(regexp = "^[0-9]{9}$")
     private String telefono;
-
-    @NotBlank
-    private String contrasena;
-
-    @NotNull
     @Past
-    private LocalDate fechaDeNacimiento;
-
-    @NotNull
+    private LocalDate fechaNacimiento;
     private TipoUsuario tipoUsuario;
+    private boolean activo;
 }

@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-import '../models/Login.dart';
-
 class ApiService {
   final String _baseUrl;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -131,29 +129,4 @@ class ApiService {
     await _request('DELETE', endpoint, requiresAuth: requiresAuth);
   }
 
-  // Método para login y guardar el token
-  Future<Map<String, dynamic>> login(Login login) async {
-    try {
-      final response = await _request(
-        'POST',
-        '/api/authentication',
-        body: {'correo': login.correo, 'contrasena': login.contrasena},
-        requiresAuth: false,
-      );
-
-      if (response.containsKey('token')) {
-        await _storage.write(key: 'jwt_token', value: response['token']);
-        return response;
-      } else {
-        throw HttpException('Error en la autenticación: Token no encontrado.');
-      }
-    } catch (e) {
-      throw HttpException('No se pudo iniciar sesión: ${e.toString()}');
-    }
-  }
-
-  // Método para logout
-  Future<void> logout() async {
-    await _storage.delete(key: 'jwt_token');
-  }
 }

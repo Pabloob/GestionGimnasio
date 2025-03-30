@@ -1,18 +1,20 @@
 package com.gestiongimnasio.backend.repository;
 
 import com.gestiongimnasio.backend.model.Cliente;
+import com.gestiongimnasio.backend.model.Inscripcion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
-    boolean existsByCorreo(String correo);
 
     Optional<Cliente> findByCorreo(String correo);
 
-    Optional<Cliente> getClienteByCorreoAndContrasena(String email, String password);
-
-    Optional<Cliente> getClienteByCorreo(String correo);
+    @Query("SELECT i FROM Inscripcion i JOIN FETCH i.clase WHERE i.cliente.id = :clienteId")
+    List<Inscripcion> findInscripcionesByClienteIdWithClase(@Param("clienteId") Long clienteId);
 }

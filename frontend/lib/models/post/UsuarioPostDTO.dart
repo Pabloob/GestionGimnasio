@@ -1,50 +1,40 @@
-enum TipoUsuario { CLIENTE, TRABAJADOR }
+import 'package:frontend/models/enums.dart';
 
-class Cliente {
+class UsuarioPostDTO {
   final String nombre;
   final String contrasena;
   final String correo;
   final String telefono;
   final DateTime fechaDeNacimiento;
-  final DateTime fechaRegistro;
   final TipoUsuario tipoUsuario;
   final bool activo;
 
-  final int inasistencias;
-
-  Cliente({
+  UsuarioPostDTO({
     required this.nombre,
     required this.contrasena,
     required this.correo,
     required this.telefono,
     required this.fechaDeNacimiento,
-    required this.inasistencias,
-    DateTime? fechaRegistro,
-    TipoUsuario? tipoUsuario,
-    bool? activo,
-  }) : fechaRegistro = fechaRegistro ?? DateTime.now(),
-       tipoUsuario = tipoUsuario ?? TipoUsuario.CLIENTE,
-       activo = activo ?? true;
+    required this.tipoUsuario,
+    required this.activo,
+  });
 
-  factory Cliente.fromJson(Map<String, dynamic> json) {
-    return Cliente(
+  // Factory para crear una instancia desde JSON
+  factory UsuarioPostDTO.fromJson(Map<String, dynamic> json) {
+    return UsuarioPostDTO(
       nombre: json['nombre'],
       contrasena: json['contrasena'],
       correo: json['correo'],
       telefono: json['telefono'],
-      fechaDeNacimiento: DateTime.parse(json['fechaDeNacimiento']),
-      inasistencias: json['inasistencias'],
-      fechaRegistro:
-          json['fechaRegistro'] != null
-              ? DateTime.parse(json['fechaRegistro'])
-              : null,
+      fechaDeNacimiento: DateTime.parse(json['fechaNacimiento']),
       tipoUsuario: TipoUsuario.values.firstWhere(
-            (e) => e.name == json["tipoUsuario"],
+        (e) => e.name == json["tipoUsuario"],
       ),
       activo: json['activo'],
     );
   }
 
+  // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
     return {
       'nombre': nombre,
@@ -52,8 +42,6 @@ class Cliente {
       'correo': correo,
       'telefono': telefono,
       'fechaDeNacimiento': fechaDeNacimiento.toIso8601String(),
-      'inasistencias': inasistencias,
-      'fechaRegistro': fechaRegistro.toIso8601String(),
       'tipoUsuario': tipoUsuario.name,
       'activo': activo,
     };

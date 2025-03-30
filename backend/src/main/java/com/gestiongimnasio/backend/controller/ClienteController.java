@@ -1,11 +1,15 @@
 package com.gestiongimnasio.backend.controller;
 
-import com.gestiongimnasio.backend.dto.ClienteDTO;
-import com.gestiongimnasio.backend.dto.LoginDTO;
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.ClienteGetDTO;
+import com.gestiongimnasio.backend.dto.post.ClientePostDTO;
+import com.gestiongimnasio.backend.dto.put.ClientePutDTO;
 import com.gestiongimnasio.backend.service.ClienteService;
+import com.gestiongimnasio.backend.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -13,59 +17,55 @@ import java.util.List;
 public class ClienteController {
 
     private final ClienteService clienteService;
+    private final UsuarioService usuarioService;
 
-
-    public ClienteController(ClienteService clienteService) {
+    public ClienteController(ClienteService clienteService, UsuarioService usuarioService) {
         this.clienteService = clienteService;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    public ResponseEntity<List<ClienteDTO>> getAllClientes() {
-        List<ClienteDTO> clientes = clienteService.getAllClientes();
+    public ResponseEntity<List<ClienteGetDTO>> getAll() {
+        List<ClienteGetDTO> clientes = clienteService.getAll();
         return ResponseEntity.ok(clientes);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
-        ClienteDTO cliente = clienteService.getClienteById(id);
+    public ResponseEntity<ClienteGetDTO> getById(@PathVariable Long id) {
+        ClienteGetDTO cliente = clienteService.getById(id);
         return ResponseEntity.ok(cliente);
     }
 
+    @GetMapping("/clases/{id}")
+    public ResponseEntity<List<ClaseGetDTO>> getClasesInscritas(@PathVariable Long id) {
+        List<ClaseGetDTO> clases = clienteService.getClasesInscritas(id);
+
+        return ResponseEntity.ok(clases);
+    }
+
     @PostMapping
-    public ResponseEntity<ClienteDTO> createCliente(@RequestBody ClienteDTO clienteDTO) {
-        if (clienteService.existsByCorreo(clienteDTO.getCorreo())) {
+    public ResponseEntity<ClienteGetDTO> save(@RequestBody ClientePostDTO clienteDTO) {
+        if (usuarioService.existsByCorreo(clienteDTO.getCorreo())) {
             return ResponseEntity.badRequest().build();
         }
 
-        ClienteDTO nuevoCliente = clienteService.saveCliente(clienteDTO);
+        ClienteGetDTO nuevoCliente = clienteService.save(clienteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoCliente);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteDTO> updateCliente(
+    public ResponseEntity<ClienteGetDTO> update(
             @PathVariable Long id,
-            @RequestBody ClienteDTO clienteDTO) {
+            @RequestBody ClientePutDTO clienteDTO) {
 
-        ClienteDTO updatedCliente = clienteService.updateCliente(id, clienteDTO);
+        ClienteGetDTO updatedCliente = clienteService.update(id, clienteDTO);
         return ResponseEntity.ok(updatedCliente);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
-        clienteService.deleteCliente(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/{id}/inasistencias")
-    public ResponseEntity<ClienteDTO> incrementarInasistencias(@PathVariable Long id) {
-        ClienteDTO cliente = clienteService.incrementarInasistencias(id);
+    @PutMapping("/inasistencias/{id}")
+    public ResponseEntity<ClienteGetDTO> incrementarInasistencias(@PathVariable Long id) {
+        ClienteGetDTO cliente = clienteService.incrementarInasistencias(id);
         return ResponseEntity.ok(cliente);
-    }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<Long> authenticateCliente(@RequestBody LoginDTO loginDTO) {
-        Long id = clienteService.authenticateCliente(loginDTO.getCorreo(), loginDTO.getContrasena());
-        return ResponseEntity.ok(id);
     }
 
 }

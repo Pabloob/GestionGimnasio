@@ -3,8 +3,9 @@ package com.gestiongimnasio.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import java.util.List;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pagos")
@@ -15,29 +16,25 @@ public class Pago {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @JoinColumn(nullable = false)
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Inscripcion> inscripciones;
+    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL)
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 
-    @NotNull(message = "El monto no puede estar vacío")
-    @Positive(message = "El monto debe ser un valor positivo")
-    @Column(nullable = false)
+    @NotNull @Positive
     private Double monto;
 
-    @Column(name = "fecha_pago")
     private LocalDate fechaPago;
 
-    @NotNull(message = "El estado de pago no puede estar vacío")
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_pago", nullable = false)
     private EstadoPago estadoPago = EstadoPago.PENDIENTE;
 
-    @Size(max = 500, message = "El comentario no puede exceder los 500 caracteres")
+    @Size(max = 500)
     private String comentario;
 
     public enum EstadoPago {
@@ -46,7 +43,7 @@ public class Pago {
 
     @PrePersist
     @PreUpdate
-    private void validate() {
+    private void validar() {
         if (estadoPago == EstadoPago.COMPLETADO && fechaPago == null) {
             fechaPago = LocalDate.now();
         }

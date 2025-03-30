@@ -1,10 +1,11 @@
 package com.gestiongimnasio.backend.controller;
 
-import com.gestiongimnasio.backend.dto.ModificacionClaseDTO;
+import com.gestiongimnasio.backend.dto.get.ModificacionClaseGetDTO;
+import com.gestiongimnasio.backend.dto.post.ModificacionClasePostDTO;
+import com.gestiongimnasio.backend.dto.put.ModificacionClasePutDTO;
 import com.gestiongimnasio.backend.service.ModificacionClaseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,37 +21,39 @@ public class ModificacionClaseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
-    public ResponseEntity<List<ModificacionClaseDTO>> getAllModificaciones() {
-        List<ModificacionClaseDTO> modificaciones = modificacionClaseService.getAllModificaciones();
+    public ResponseEntity<List<ModificacionClaseGetDTO>> getAll() {
+        List<ModificacionClaseGetDTO> modificaciones = modificacionClaseService.getAll();
+        return ResponseEntity.ok(modificaciones);
+    }
+
+    @GetMapping("/clase/{id}")
+    public ResponseEntity<ModificacionClaseGetDTO> getByClase(@PathVariable Long id) {
+        ModificacionClaseGetDTO modificaciones = modificacionClaseService.getByClase(id);
+        return ResponseEntity.ok(modificaciones);
+    }
+
+    @GetMapping("/instructor/{id}")
+    public ResponseEntity<ModificacionClaseGetDTO> getByInstructor(@PathVariable Long id) {
+        ModificacionClaseGetDTO modificaciones = modificacionClaseService.getByInstructor(id);
         return ResponseEntity.ok(modificaciones);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
-    public ResponseEntity<ModificacionClaseDTO> getModificacionById(@PathVariable Integer id) {
-        ModificacionClaseDTO modificacion = modificacionClaseService.getModificacionById(id);
+    public ResponseEntity<ModificacionClaseGetDTO> getById(@PathVariable Long id) {
+        ModificacionClaseGetDTO modificacion = modificacionClaseService.getById(id);
         return ResponseEntity.ok(modificacion);
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
-    public ResponseEntity<ModificacionClaseDTO> createModificacion(@RequestBody ModificacionClaseDTO modificacionClaseDTO) {
-        ModificacionClaseDTO nuevaModificacion = modificacionClaseService.saveModificacion(modificacionClaseDTO);
+    public ResponseEntity<ModificacionClaseGetDTO> save(@RequestBody ModificacionClasePostDTO modificacionClaseDTO) {
+        ModificacionClaseGetDTO nuevaModificacion = modificacionClaseService.save(modificacionClaseDTO);
         return new ResponseEntity<>(nuevaModificacion, HttpStatus.CREATED);
     }
 
-    @GetMapping("/clase/{claseId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
-    public ResponseEntity<List<ModificacionClaseDTO>> getModificacionesByClase(@PathVariable Integer claseId) {
-        List<ModificacionClaseDTO> modificaciones = modificacionClaseService.getModificacionesByClase(claseId);
-        return ResponseEntity.ok(modificaciones);
+    @PutMapping({"/id"})
+    public ResponseEntity<ModificacionClaseGetDTO> update(@RequestBody Long id, @RequestBody ModificacionClasePutDTO modificacionClaseDTO) {
+        ModificacionClaseGetDTO nuevaModificacion = modificacionClaseService.update(id, modificacionClaseDTO);
+        return new ResponseEntity<>(nuevaModificacion, HttpStatus.CREATED);
     }
 
-    @GetMapping("/instructor/{instructorId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
-    public ResponseEntity<List<ModificacionClaseDTO>> getModificacionesByInstructor(@PathVariable Long instructorId) {
-        List<ModificacionClaseDTO> modificaciones = modificacionClaseService.getModificacionesByInstructor(instructorId);
-        return ResponseEntity.ok(modificaciones);
-    }
 }

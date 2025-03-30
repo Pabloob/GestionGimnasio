@@ -7,14 +7,13 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
 
 @Data
-public class ModificacionClaseRequestDTO {
+public class ModificacionClasePostDTO {
     @NotNull
-    private Integer claseId;
+    private Long claseId;
 
     @NotNull @Positive
     private Double precio;
@@ -26,7 +25,7 @@ public class ModificacionClaseRequestDTO {
     private LocalTime horaFin;
 
     @NotNull
-    private Integer instructorId;
+    private Long instructorId;
 
     @NotNull @Positive
     private Integer capacidadMaxima;
@@ -40,5 +39,6 @@ public class ModificacionClaseRequestDTO {
     @Size(max = 100)
     private String comentario;
 
-    // Getters y Setters
+    @NotNull
+    private Long modificadoPorId;
 }

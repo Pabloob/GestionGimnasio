@@ -1,17 +1,18 @@
-enum TipoUsuario { CLIENTE, TRABAJADOR }
-
-enum TipoTrabajador { ADMIN, RECEPCIONISTA, INSTRUCTOR }
-
-class Login {
+class UsuarioLoginDTO {
   final String correo;
   final String contrasena;
 
-  Login({required this.correo, required this.contrasena});
+  UsuarioLoginDTO({required this.correo, required this.contrasena});
 
-  factory Login.fromJson(Map<String, dynamic> json) {
-    return Login(correo: json['correo'], contrasena: json['contrasena']);
+  // Factory para crear una instancia desde JSON
+  factory UsuarioLoginDTO.fromJson(Map<String, dynamic> json) {
+    return UsuarioLoginDTO(
+      correo: json['correo'],
+      contrasena: json['contrasena'],
+    );
   }
 
+  // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
     return {'correo': correo, 'contrasena': contrasena};
   }

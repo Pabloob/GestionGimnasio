@@ -1,4 +1,4 @@
-package com.gestiongimnasio.backend.dto.post;
+package com.gestiongimnasio.backend.dto.put;
 
 import com.gestiongimnasio.backend.model.Clase.Dia;
 import jakarta.validation.constraints.NotBlank;
@@ -11,34 +11,21 @@ import java.time.LocalTime;
 import java.util.Set;
 
 @Data
-public class ModificacionClasePostDTO {
+public class ModificacionClasePutDTO {
     @NotNull
-    private Long claseId;
+    private Long id;
 
-    @NotNull @Positive
+    @Positive
     private Double precio;
-
-    @NotNull
     private LocalTime horaInicio;
-
-    @NotNull
     private LocalTime horaFin;
-
-    @NotNull
     private Long instructorId;
-
-    @NotNull @Positive
+    @Positive
     private Integer capacidadMaxima;
-
-    @NotBlank @Size(max = 100)
+    @Size(max = 100)
     private String sala;
-
-    @NotNull
     private Set<Dia> dias;
-
     @Size(max = 100)
     private String comentario;
-
-    @NotNull
     private Long modificadoPor;
 }

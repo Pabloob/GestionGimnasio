@@ -1,63 +1,57 @@
+import 'package:frontend/models/enums.dart';
 import 'package:intl/intl.dart';
 
-enum Dia {
-  LUNES, 
-  MARTES, 
-  MIERCOLES, 
-  JUEVES, 
-  VIERNES, 
-  SABADO, 
-  DOMINGO
-}
-
-class Clase {
+class ClasePostDTO {
   final String nombre;
   final double precio;
   final DateTime horaInicio;
   final DateTime horaFin;
-  final int idInstructor;
+  final int instructorId;
   final int capacidadMaxima;
   final String sala;
   final Set<Dia> dias;
-  final bool activa;
 
-  Clase({
+  ClasePostDTO({
     required this.nombre,
     required this.precio,
     required this.horaInicio,
     required this.horaFin,
-    required this.idInstructor,
+    required this.instructorId,
     required this.capacidadMaxima,
     required this.sala,
     required this.dias,
-    bool? activa,
-  }) : activa = activa ?? true;
+  });
 
-  factory Clase.fromJson(Map<String, dynamic> json) {
-    return Clase(
+  // Factory para crear una instancia desde JSON
+  factory ClasePostDTO.fromJson(Map<String, dynamic> json) {
+    return ClasePostDTO(
       nombre: json['nombre'],
       precio: json['precio'].toDouble(),
       horaInicio: DateFormat("HH:mm:ss").parse(json['horaInicio']),
       horaFin: DateFormat("HH:mm:ss").parse(json['horaFin']),
-      idInstructor: json['idInstructor'],
+      instructorId: json['instructorId'],
       capacidadMaxima: json['capacidadMaxima'],
       sala: json['sala'],
-      dias: (json['dias'] as List).map((d) => Dia.values.firstWhere((e) => e.toString() == 'Dia.$d')).toSet(),
-      activa: json['activa'],
+      dias:
+          (json['dias'] as List)
+              .map(
+                (d) => Dia.values.firstWhere((e) => e.toString() == 'Dia.$d'),
+              )
+              .toSet(),
     );
   }
 
+  // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
     return {
       'nombre': nombre,
       'precio': precio,
       'horaInicio': horaInicio.toIso8601String(),
       'horaFin': horaFin.toIso8601String(),
-      'idInstructor': idInstructor,
+      'instructorId': instructorId,
       'capacidadMaxima': capacidadMaxima,
       'sala': sala,
       'dias': dias.map((d) => d.toString().split('.').last).toList(),
-      'activa': activa,
     };
   }
 }

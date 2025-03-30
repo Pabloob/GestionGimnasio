@@ -1,13 +1,17 @@
 package com.gestiongimnasio.backend.repository;
 
-import com.gestiongimnasio.backend.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
-import java.util.OptionalInt;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.gestiongimnasio.backend.model.Usuario;
 
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
-    Optional<Usuario> getUsuarioByCorreo(String correo);
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
+
+    boolean existsByCorreo(String correo);
+
+    Optional<Usuario> findByCorreo(String correo);
 
 }

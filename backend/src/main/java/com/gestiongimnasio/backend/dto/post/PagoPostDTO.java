@@ -12,7 +12,7 @@ public class PagoPostDTO {
     @NotNull @Positive
     private Double monto;
 
-    private List<Integer> inscripcionesIds;
+    private List<Long> inscripcionesIds;
 
     @Size(max = 500)
     private String comentario;

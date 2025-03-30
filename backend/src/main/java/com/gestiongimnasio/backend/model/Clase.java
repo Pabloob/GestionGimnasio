@@ -1,10 +1,11 @@
 package com.gestiongimnasio.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -16,48 +17,40 @@ public class Clase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder los 100 caracteres")
-    @Column(nullable = false, length = 100)
+    @NotBlank @Size(max = 100)
     private String nombre;
 
-    @NotNull(message = "El precio no puede estar vacío")
-    @Positive(message = "El precio debe ser un valor positivo")
-    @Column(nullable = false)
+    @NotNull @Positive
     private Double precio;
 
-    @NotNull(message = "La hora de inicio no puede estar vacía")
-    @Column(name = "hora_inicio", nullable = false)
+    @NotNull
     private LocalTime horaInicio;
 
-    @NotNull(message = "La hora de fin no puede estar vacía")
-    @Column(name = "hora_fin", nullable = false)
+    @NotNull
     private LocalTime horaFin;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_instructor", nullable = false)
+    @JoinColumn(nullable = false)
     private Trabajador instructor;
 
-    @NotNull(message = "La capacidad máxima no puede estar vacía")
-    @Positive(message = "La capacidad máxima debe ser un valor positivo")
-    @Column(name = "capacidad_max", nullable = false)
+    @NotNull @Positive
     private Integer capacidadMaxima;
 
-    @NotBlank(message = "La sala no puede estar vacía")
-    @Size(max = 100, message = "La sala no puede exceder los 100 caracteres")
-    @Column(nullable = false, length = 100)
+    @NotBlank @Size(max = 100)
     private String sala;
 
     @ElementCollection
     @CollectionTable(name = "clase_dias", joinColumns = @JoinColumn(name = "id_clase"))
-    @Column(name = "dia", nullable = false)
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Los días no pueden estar vacíos")
-    private Set<Dia> dias;
+    @NotNull
+    private Set<Dia> dias = new HashSet<>();
 
-    @Column(nullable = false)
+    @OneToMany(mappedBy = "clase", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<Inscripcion> inscripciones = new HashSet<>();
+
     private boolean activa = true;
 
     public enum Dia {
@@ -66,11 +59,11 @@ public class Clase {
 
     @PrePersist
     @PreUpdate
-    private void validate() {
+    private void validar() {
         if (horaFin.isBefore(horaInicio)) {
             throw new IllegalStateException("La hora de fin debe ser posterior a la hora de inicio");
         }
-        if (dias == null || dias.isEmpty()) {
+        if (dias.isEmpty()) {
             throw new IllegalStateException("Debe haber al menos un día seleccionado");
         }
     }

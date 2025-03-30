@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/Cliente.dart';
-import 'package:frontend/models/Login.dart';
+import 'package:frontend/models/get/ClaseGetDTO.dart';
+import 'package:frontend/models/get/ClienteGetDTO.dart';
+import 'package:frontend/models/post/ClientePostDTO.dart';
+import 'package:frontend/models/put/ClientePutDTO.dart';
 
 class ApiCliente {
   final ApiService _apiService;
@@ -10,19 +12,26 @@ class ApiCliente {
   ApiCliente({required ApiService apiService}) : _apiService = apiService;
 
   // Obtener todos los clientes
-  Future<List<Cliente>> obtenerTodos() async {
+  Future<List<ClienteGetDTO>> obtenerTodos() async {
     final response = await _apiService.get('/api/clientes');
-    return (response as List).map((json) => Cliente.fromJson(json)).toList();
+    return (response as List).map((json) => ClienteGetDTO.fromJson(json)).toList();
   }
 
   // Obtener un cliente por ID
-  Future<Cliente> obtenerPorId(int id) async {
+  Future<ClienteGetDTO> obtenerPorId(int id) async {
     final response = await _apiService.get('/api/clientes/$id');
-    return Cliente.fromJson(response);
+    return ClienteGetDTO.fromJson(response);
+  }
+
+  // Obtener un cliente por ID
+  Future<List<ClaseGetDTO>> obtenerClases(int id) async {
+    final response = await _apiService.get('/api/clientes/clases/$id');
+
+    return (response as List).map((json) => ClaseGetDTO.fromJson(json)).toList();
   }
 
   // Crear un nuevo cliente
-  Future<Cliente> crearCliente(Cliente cliente) async {
+  Future<ClienteGetDTO> crearCliente(ClientePostDTO cliente) async {
     try {
       final response = await _apiService.post(
         '/api/clientes',
@@ -30,19 +39,19 @@ class ApiCliente {
         requiresAuth: false,
       );
 
-      return Cliente.fromJson(response);
+      return ClienteGetDTO.fromJson(response);
     } catch (e) {
       throw HttpException('No se pudo crear el cliente: ${e.toString()}');
     }
   }
 
   // Actualizar un cliente
-  Future<Cliente> actualizarCliente(int id, Cliente cliente) async {
+  Future<ClienteGetDTO> actualizarCliente(int id, ClientePutDTO cliente) async {
     final response = await _apiService.put(
       '/api/clientes/$id',
       cliente.toJson(),
     );
-    return Cliente.fromJson(response);
+    return ClienteGetDTO.fromJson(response);
   }
 
   // Eliminar un cliente
@@ -51,21 +60,12 @@ class ApiCliente {
   }
 
   // Incrementar inasistencias de un cliente
-  Future<Cliente> incrementarInasistencias(int id) async {
+  Future<ClaseGetDTO> incrementarInasistencias(int id) async {
     final response = await _apiService.put(
-      '/api/clientes/$id/inasistencias',
+      '/api/clientes/inasistencias/$id',
       {},
     );
-    return Cliente.fromJson(response);
+    return ClaseGetDTO.fromJson(response);
   }
 
-  // Autenticar y obtener ID
-  Future<int> autenticarCliente(Login login) async {
-    final response = await _apiService.post(
-      '/api/clientes/authenticate',
-      login.toJson(),
-    );
-    return response as int;
-  }
-  
 }

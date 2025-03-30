@@ -11,10 +11,13 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsuarioRequestDTO {
+public class UsuarioPostDTO {
     @NotBlank
     @Size(max = 100)
     private String nombre;
+
+    @NotBlank
+    private String contrasena;
 
     @NotBlank
     @Email
@@ -24,12 +27,9 @@ public class UsuarioRequestDTO {
     @Pattern(regexp = "^[0-9]{9}$")
     private String telefono;
 
-    @NotBlank
-    private String contrasena;
-
     @NotNull
     @Past
-    private LocalDate fechaDeNacimiento;
+    private LocalDate fechaNacimiento;
 
     @NotNull
     private TipoUsuario tipoUsuario;

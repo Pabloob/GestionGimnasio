@@ -1,14 +1,24 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.ModificacionClaseDTO;
-import com.gestiongimnasio.backend.model.ModificacionClase;
-
 import java.util.List;
 
+import com.gestiongimnasio.backend.dto.get.ModificacionClaseGetDTO;
+import com.gestiongimnasio.backend.dto.post.ModificacionClasePostDTO;
+import com.gestiongimnasio.backend.dto.put.ModificacionClasePutDTO;
+
 public interface ModificacionClaseService {
-    ModificacionClaseDTO saveModificacion(ModificacionClaseDTO modificacionClaseDTO);
-    List<ModificacionClaseDTO> getAllModificaciones();
-    ModificacionClaseDTO getModificacionById(Integer id);
-    List<ModificacionClaseDTO> getModificacionesByClase(Integer claseId);
-    List<ModificacionClaseDTO> getModificacionesByInstructor(Long instructorId);
+    ModificacionClaseGetDTO getById(Long id);
+    ModificacionClaseGetDTO getByClase(Long id);
+    ModificacionClaseGetDTO getByInstructor(Long id);
+
+    List<ModificacionClaseGetDTO> getAll();
+
+
+    ModificacionClaseGetDTO save(ModificacionClasePostDTO modificacionClaseDTO);
+
+    ModificacionClaseGetDTO update(Long id, ModificacionClasePutDTO modificacionClaseDTO);
+
+    long countInscritosByClaseId(Long claseId);
+
+    void delete(Long id);
 }

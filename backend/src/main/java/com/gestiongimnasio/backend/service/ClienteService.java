@@ -1,21 +1,26 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.ClienteDTO;
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.ClienteGetDTO;
+import com.gestiongimnasio.backend.dto.post.ClientePostDTO;
+import com.gestiongimnasio.backend.dto.put.ClientePutDTO;
 
 
 import java.util.List;
 
 public interface ClienteService {
-    ClienteDTO saveCliente(ClienteDTO clienteDTO);
-    List<ClienteDTO> getAllClientes();
-    ClienteDTO getClienteById(Long id);
-    ClienteDTO updateCliente(Long id, ClienteDTO clienteDTO);
-    void deleteCliente(Long id);
-    ClienteDTO incrementarInasistencias(Long id);
+    ClienteGetDTO getById(Long id);
 
-    boolean existsByCorreo(String correo);
+    List<ClienteGetDTO> getAll();
 
-    Long authenticateCliente(String correo, String contrasena);
+    List<ClaseGetDTO> getClasesInscritas(Long clienteId);
 
-    ClienteDTO obtenerClientePorCorreo(String correo);
+
+    ClienteGetDTO save(ClientePostDTO registroDTO);
+
+    ClienteGetDTO update(Long id, ClientePutDTO updateDTO);
+
+
+    ClienteGetDTO incrementarInasistencias(Long id);
+
 }

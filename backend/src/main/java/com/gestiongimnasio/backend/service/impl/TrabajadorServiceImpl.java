@@ -1,86 +1,127 @@
 package com.gestiongimnasio.backend.service.impl;
 
-import com.gestiongimnasio.backend.dto.TrabajadorDTO;
-import com.gestiongimnasio.backend.model.Cliente;
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.TrabajadorGetDTO;
+import com.gestiongimnasio.backend.dto.post.TrabajadorPostDTO;
+import com.gestiongimnasio.backend.dto.put.TrabajadorPutDTO;
+import com.gestiongimnasio.backend.model.Clase;
 import com.gestiongimnasio.backend.model.Trabajador;
 import com.gestiongimnasio.backend.repository.TrabajadorRepository;
 import com.gestiongimnasio.backend.service.TrabajadorService;
+import com.gestiongimnasio.backend.utils.BusinessException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class TrabajadorServiceImpl implements TrabajadorService {
 
-    @Autowired
-    private TrabajadorRepository trabajadorRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
+    private final TrabajadorRepository trabajadorRepository;
+    private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public TrabajadorDTO saveTrabajador(TrabajadorDTO trabajadorDTO) {
+    @Transactional(readOnly = true)
+    public TrabajadorGetDTO getById(Long id) {
+        Trabajador trabajador = trabajadorRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
+        return toResponseDTO(trabajador);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TrabajadorGetDTO> getByTipo(Trabajador.TipoTrabajador tipo) {
+        if (tipo == null) {
+            throw new IllegalArgumentException("Tipo de trabajador no puede ser nulo");
+        }
+
+        return trabajadorRepository.findByTipoTrabajador(tipo).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TrabajadorGetDTO> getAll() {
+        return trabajadorRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClaseGetDTO> getClasesImpartidas(Long id) {
+        Trabajador trabajador = trabajadorRepository.findByIdWithClases(id)
+                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
+
+        if (trabajador.getTipoTrabajador() != Trabajador.TipoTrabajador.INSTRUCTOR) {
+            throw new BusinessException("Solo los instructores pueden impartir clases");
+        }
+
+        return trabajador.getClases().stream()
+                .map(this::toClaseResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TrabajadorGetDTO save(TrabajadorPostDTO trabajadorDTO) {
+        if (trabajadorDTO == null) {
+            throw new IllegalArgumentException("Datos del trabajador no pueden ser nulos");
+        }
+
+        if (trabajadorRepository.existsByCorreo(trabajadorDTO.getCorreo())) {
+            throw new BusinessException("El correo ya está registrado");
+        }
+
         Trabajador trabajador = modelMapper.map(trabajadorDTO, Trabajador.class);
+        trabajador.setContrasena(passwordEncoder.encode(trabajadorDTO.getContrasena()));
+        trabajador.setActivo(true);
 
         Trabajador trabajadorGuardado = trabajadorRepository.save(trabajador);
-
-        return modelMapper.map(trabajadorGuardado, TrabajadorDTO.class);
+        return toResponseDTO(trabajadorGuardado);
     }
 
     @Override
-    public List<TrabajadorDTO> getAllTrabajadores() {
-        return trabajadorRepository.findAll()
-                .stream()
-                .map(trabajador -> modelMapper.map(trabajador, TrabajadorDTO.class))
-                .collect(Collectors.toList());
-    }
+    public TrabajadorGetDTO update(Long id, TrabajadorPutDTO trabajadorDTO) {
+        if (!id.equals(trabajadorDTO.getId())) {
+            throw new IllegalArgumentException("ID de trabajador no coincide");
+        }
 
-    @Override
-    public TrabajadorDTO getTrabajadorById(Long id) {
-        Trabajador trabajador = trabajadorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
-        return modelMapper.map(trabajador, TrabajadorDTO.class);
-    }
-
-    @Override
-    public TrabajadorDTO updateTrabajador(Long id, TrabajadorDTO trabajadorDTO) {
         Trabajador trabajadorExistente = trabajadorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
+                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
 
-        // Actualizar campos
+        modelMapper.getConfiguration().setSkipNullEnabled(true);
         modelMapper.map(trabajadorDTO, trabajadorExistente);
 
-        // Guardar cambios
-        Trabajador trabajadorActualizado = trabajadorRepository.save(trabajadorExistente);
-        return modelMapper.map(trabajadorActualizado, TrabajadorDTO.class);
+        if (trabajadorDTO.getContrasena() != null && !trabajadorDTO.getContrasena().isBlank()) {
+            trabajadorExistente.setContrasena(passwordEncoder.encode(trabajadorDTO.getContrasena()));
+        }
+
+        return toResponseDTO(trabajadorRepository.save(trabajadorExistente));
     }
 
-    @Override
-    public void deleteTrabajador(Long id) {
-        trabajadorRepository.deleteById(id);
+    private TrabajadorGetDTO toResponseDTO(Trabajador trabajador) {
+        TrabajadorGetDTO dto = modelMapper.map(trabajador, TrabajadorGetDTO.class);
+
+        if (trabajador.getClases() != null) {
+            dto.setClasesIds(
+                    trabajador.getClases().stream()
+                            .map(Clase::getId)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return dto;
     }
 
-    @Override
-    public List<TrabajadorDTO> findByTipo(Trabajador.TipoTrabajador tipo) {
-        return trabajadorRepository.findByTipoTrabajador(tipo)
-                .stream()
-                .map(trabajador -> modelMapper.map(trabajador, TrabajadorDTO.class))
-                .collect(Collectors.toList());
-    }
-
-
-    @Override
-    public boolean existsByCorreo(String correo) {
-        return trabajadorRepository.existsByCorreo(correo);
-    }
-
-    @Override
-    public Long authenticateCliente(String correo, String contrasena) {
-        Trabajador trabajador = trabajadorRepository.getTrabajadorByCorreoAndContrasena(correo,contrasena)
-                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado"));
-        return trabajador.getId();
+    private ClaseGetDTO toClaseResponseDTO(Clase clase) {
+        return modelMapper.map(clase, ClaseGetDTO.class);
     }
 }

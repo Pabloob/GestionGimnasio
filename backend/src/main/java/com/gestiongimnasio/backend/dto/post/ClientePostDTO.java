@@ -20,4 +20,6 @@ public class ClientePostDTO {
 
     @NotNull @Past
     private LocalDate fechaNacimiento;
+
+    private boolean activo;
 }

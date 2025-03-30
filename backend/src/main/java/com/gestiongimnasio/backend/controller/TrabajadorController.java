@@ -1,81 +1,76 @@
 package com.gestiongimnasio.backend.controller;
 
-import com.gestiongimnasio.backend.dto.LoginDTO;
-import com.gestiongimnasio.backend.dto.TrabajadorDTO;
-import com.gestiongimnasio.backend.model.Trabajador;
-import com.gestiongimnasio.backend.security.JwtTokenProvider;
-import com.gestiongimnasio.backend.service.TrabajadorService;
+import java.util.List;
+
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.TrabajadorGetDTO;
+import com.gestiongimnasio.backend.dto.post.TrabajadorPostDTO;
+import com.gestiongimnasio.backend.dto.put.TrabajadorPutDTO;
+import com.gestiongimnasio.backend.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.gestiongimnasio.backend.model.Trabajador;
+import com.gestiongimnasio.backend.service.TrabajadorService;
 
 @RestController
 @RequestMapping("/api/trabajadores")
 public class TrabajadorController {
 
     private final TrabajadorService trabajadorService;
+    private final UsuarioService usuarioService;
 
 
-    public TrabajadorController(TrabajadorService trabajadorService) {
+    public TrabajadorController(TrabajadorService trabajadorService, UsuarioService usuarioService) {
         this.trabajadorService = trabajadorService;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TrabajadorDTO>> getAllTrabajadores() {
-        List<TrabajadorDTO> trabajadores = trabajadorService.getAllTrabajadores();
+    public ResponseEntity<List<TrabajadorGetDTO>> getAll() {
+        List<TrabajadorGetDTO> trabajadores = trabajadorService.getAll();
         return ResponseEntity.ok(trabajadores);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
-    public ResponseEntity<TrabajadorDTO> getTrabajadorById(@PathVariable Long id) {
-        TrabajadorDTO trabajador = trabajadorService.getTrabajadorById(id);
+    public ResponseEntity<TrabajadorGetDTO> getById(@PathVariable Long id) {
+        TrabajadorGetDTO trabajador = trabajadorService.getById(id);
         return ResponseEntity.ok(trabajador);
     }
 
+    @GetMapping("/tipos/{tipo}")
+    public ResponseEntity<List<TrabajadorGetDTO>> getByTipo(@PathVariable Trabajador.TipoTrabajador tipo) {
+        List<TrabajadorGetDTO> trabajadores = trabajadorService.getByTipo(tipo);
+        return ResponseEntity.ok(trabajadores);
+    }
+
+    @GetMapping("/clases/{id}")
+    public ResponseEntity<List<ClaseGetDTO>> getClasesImpartidas(@PathVariable Long id) {
+        List<ClaseGetDTO> clases = trabajadorService.getClasesImpartidas(id);
+        return ResponseEntity.ok(clases);
+    }
+
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TrabajadorDTO> createTrabajador(@RequestBody TrabajadorDTO trabajadorDTO) {
-        if(trabajadorService.existsByCorreo(trabajadorDTO.getCorreo())) {
+    public ResponseEntity<TrabajadorGetDTO> save(@RequestBody TrabajadorPostDTO trabajadorDTO) {
+        if (usuarioService.existsByCorreo(trabajadorDTO.getCorreo())) {
             return ResponseEntity.badRequest().build();
         }
 
-        TrabajadorDTO nuevoTrabajador = trabajadorService.saveTrabajador(trabajadorDTO);
+        TrabajadorGetDTO nuevoTrabajador = trabajadorService.save(trabajadorDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoTrabajador);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TrabajadorDTO> updateTrabajador(@PathVariable Long id, @RequestBody TrabajadorDTO trabajadorDTO) {
-        TrabajadorDTO updatedTrabajador = trabajadorService.updateTrabajador(id, trabajadorDTO);
+    public ResponseEntity<TrabajadorGetDTO> update(@PathVariable Long id, @RequestBody TrabajadorPutDTO trabajadorDTO) {
+        TrabajadorGetDTO updatedTrabajador = trabajadorService.update(id, trabajadorDTO);
         return ResponseEntity.ok(updatedTrabajador);
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteTrabajador(@PathVariable Long id) {
-        trabajadorService.deleteTrabajador(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/tipo/{tipo}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TrabajadorDTO>> getTrabajadoresByTipo(@PathVariable Trabajador.TipoTrabajador tipo) {
-        List<TrabajadorDTO> trabajadores = trabajadorService.findByTipo(tipo);
-        return ResponseEntity.ok(trabajadores);
-    }
-
-    @PostMapping("/authenticate")
-    public ResponseEntity<Long> authenticateTrabajador(@RequestBody LoginDTO loginDTO) {
-        Long id = trabajadorService.authenticateCliente(loginDTO.getCorreo(), loginDTO.getContrasena());
-        return ResponseEntity.ok(id);
-    }
 }

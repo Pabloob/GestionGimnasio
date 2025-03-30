@@ -3,8 +3,8 @@ package com.gestiongimnasio.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,34 +14,29 @@ import java.util.List;
 @NoArgsConstructor
 public class Trabajador extends Usuario {
 
-    @NotBlank(message = "La dirección no puede estar vacía")
-    @Column(nullable = false, length = 200)
+    @NotBlank
     private String direccion;
 
-    @NotNull(message = "La hora de inicio no puede estar vacía")
-    @Column(name = "hora_inicio", nullable = false)
+    @NotNull
     private LocalTime horaInicio;
 
-    @NotNull(message = "La hora de fin no puede estar vacía")
-    @Column(name = "hora_fin", nullable = false)
+    @NotNull
     private LocalTime horaFin;
 
-    @NotNull(message = "El tipo de trabajador no puede estar vacío")
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_trabajador", nullable = false)
     private TipoTrabajador tipoTrabajador;
 
-    @OneToMany(mappedBy = "instructor", cascade = CascadeType.ALL)
-    private List<Clase> clases;
+    @OneToMany(mappedBy = "instructor")
+    private List<Clase> clases = new ArrayList<>();
 
     public enum TipoTrabajador {
-        ADMIN, RECEPCIONISTA, INSTRUCTOR
+        ADMIN, INSTRUCTOR, RECEPCIONISTA
     }
 
-    @PrePersist
-    @PreUpdate
-    private void validate() {
-        if (getTipoUsuario() != Usuario.TipoUsuario.TRABAJADOR) {
+    @Override
+    protected void validacionesEspecificas() {
+        if (getTipoUsuario() != TipoUsuario.TRABAJADOR) {
             throw new IllegalStateException("El tipo de usuario debe ser TRABAJADOR");
         }
         if (horaFin.isBefore(horaInicio)) {

@@ -1,9 +1,11 @@
 package com.gestiongimnasio.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
-import jakarta.validation.constraints.NotNull;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,20 +15,20 @@ import java.util.List;
 @NoArgsConstructor
 public class Cliente extends Usuario {
 
-    @PositiveOrZero(message = "Las inasistencias no pueden ser negativas")
-    @Column(nullable = false)
+    @PositiveOrZero
     private int inasistencias = 0;
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Inscripcion> inscripciones;
+    @JsonIgnore
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Pago> pagos;
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Pago> pagos = new ArrayList<>();
 
-    @PrePersist
-    @PreUpdate
-    private void validate() {
-        if (getTipoUsuario() != Usuario.TipoUsuario.CLIENTE) {
+    @Override
+    protected void validacionesEspecificas() {
+        if (getTipoUsuario() != TipoUsuario.CLIENTE) {
             throw new IllegalStateException("El tipo de usuario debe ser CLIENTE");
         }
     }

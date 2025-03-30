@@ -1,16 +1,30 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.ClaseDTO;
-import com.gestiongimnasio.backend.model.Clase;
-
 import java.util.List;
 
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.post.ClasePostDTO;
+import com.gestiongimnasio.backend.dto.put.ClasePutDTO;
+
 public interface ClaseService {
-    ClaseDTO saveClase(ClaseDTO claseDTO);
-    List<ClaseDTO> getAllClases();
-    ClaseDTO getClaseById(Integer id);
-    ClaseDTO updateClase(Integer id, ClaseDTO claseDTO);
-    void deleteClase(Integer id);
-    List<ClaseDTO> getClasesByInstructor(Long instructorId);
-    List<ClaseDTO> searchByNombre(String nombre);
+    ClaseGetDTO getById(Long id);
+
+    List<ClaseGetDTO> getAll();
+
+    ClaseGetDTO getByNombre(String nombreClase);
+
+
+    ClaseGetDTO save(ClasePostDTO claseDTO);
+
+    ClaseGetDTO update(Long id, ClasePutDTO claseDTO);
+
+    void delete(Long id);
+
+    void confirmarAsistencias(Long idClase);
+
+    void deactivate(Long id);
+
+    List<ClaseGetDTO> getClasesByInstructor(Long instructorId);
+
+    long countInscritosByClaseId(Long claseId);
 }

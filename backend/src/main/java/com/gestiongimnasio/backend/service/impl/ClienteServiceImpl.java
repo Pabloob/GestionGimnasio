@@ -1,108 +1,130 @@
 package com.gestiongimnasio.backend.service.impl;
 
-import com.gestiongimnasio.backend.dto.ClienteDTO;
+import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
+import com.gestiongimnasio.backend.dto.get.ClienteGetDTO;
+import com.gestiongimnasio.backend.dto.post.ClientePostDTO;
+import com.gestiongimnasio.backend.dto.put.ClientePutDTO;
+import com.gestiongimnasio.backend.model.Clase;
 import com.gestiongimnasio.backend.model.Cliente;
+import com.gestiongimnasio.backend.model.Inscripcion;
 import com.gestiongimnasio.backend.repository.ClienteRepository;
+import com.gestiongimnasio.backend.repository.UsuarioRepository;
 import com.gestiongimnasio.backend.service.ClienteService;
+import com.gestiongimnasio.backend.utils.BusinessException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class ClienteServiceImpl implements ClienteService {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
+    private final ClienteRepository clienteRepository;
+    private final ModelMapper modelMapper;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public ClienteDTO saveCliente(ClienteDTO clienteDTO) {
-        // Crear el encriptador de contraseñas
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-        // Hashear la contraseña
-        String contrasenaHasheada = passwordEncoder.encode(clienteDTO.getContrasena());
-
-        // Establecer la contraseña hasheada en el DTO
-        clienteDTO.setContrasena(contrasenaHasheada);
-
-        // Convertir DTO a entidad
-        Cliente cliente = modelMapper.map(clienteDTO, Cliente.class);
-
-        // Guardar la entidad
-        Cliente clienteGuardado = clienteRepository.save(cliente);
-
-        // Convertir entidad a DTO
-        return modelMapper.map(clienteGuardado, ClienteDTO.class);
+    @Transactional(readOnly = true)
+    public ClienteGetDTO getById(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente no encontrado con ID: " + id));
+        return toResponseDTO(cliente);
     }
 
     @Override
-    public List<ClienteDTO> getAllClientes() {
-        return clienteRepository.findAll()
-                .stream()
-                .map(cliente -> modelMapper.map(cliente, ClienteDTO.class))
+    @Transactional(readOnly = true)
+    public List<ClienteGetDTO> getAll() {
+        return clienteRepository.findAll().stream()
+                .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ClienteDTO getClienteById(Long id) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return modelMapper.map(cliente, ClienteDTO.class);
+    @Transactional(readOnly = true)
+    public List<ClaseGetDTO> getClasesInscritas(Long clienteId) {
+        if (!clienteRepository.existsById(clienteId)) {
+            throw new BusinessException("Cliente no encontrado con ID: " + clienteId);
+        }
+
+        List<Inscripcion> inscripciones = clienteRepository.findInscripcionesByClienteIdWithClase(clienteId);
+        return inscripciones.stream()
+                .map(Inscripcion::getClase)
+                .map(this::toClaseResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public ClienteDTO updateCliente(Long id, ClienteDTO clienteDTO) {
-        Cliente clienteExistente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+    public ClienteGetDTO save(ClientePostDTO clienteDTO) {
+        if (clienteDTO == null) {
+            throw new IllegalArgumentException("Datos del cliente no pueden ser nulos");
+        }
 
-        // Actualizar campos
+        if (usuarioRepository.existsByCorreo(clienteDTO.getCorreo())) {
+            throw new BusinessException("El correo ya está registrado");
+        }
+
+        Cliente cliente = modelMapper.map(clienteDTO, Cliente.class);
+        cliente.setContrasena(passwordEncoder.encode(clienteDTO.getContrasena()));
+        cliente.setActivo(true);
+        cliente.setInasistencias(0);
+
+        Cliente clienteGuardado = clienteRepository.save(cliente);
+        return toResponseDTO(clienteGuardado);
+    }
+
+    @Override
+    public ClienteGetDTO update(Long id, ClientePutDTO clienteDTO) {
+        if (!id.equals(clienteDTO.getId())) {
+            throw new IllegalArgumentException("ID de cliente no coincide");
+        }
+
+        Cliente clienteExistente = clienteRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("Cliente no encontrado con ID: " + id));
+
+        modelMapper.getConfiguration().setSkipNullEnabled(true);
         modelMapper.map(clienteDTO, clienteExistente);
 
-        // Guardar cambios
-        Cliente clienteActualizado = clienteRepository.save(clienteExistente);
-        return modelMapper.map(clienteActualizado, ClienteDTO.class);
-    }
+        // Actualizar contraseña si se proporciona
+        if (clienteDTO.getContrasena() != null && !clienteDTO.getContrasena().isBlank()) {
+            clienteExistente.setContrasena(passwordEncoder.encode(clienteDTO.getContrasena()));
+        }
 
-
-    @Override
-    public void deleteCliente(Long id) {
-        clienteRepository.deleteById(id);
+        return toResponseDTO(clienteRepository.save(clienteExistente));
     }
 
     @Override
-    public ClienteDTO incrementarInasistencias(Long id) {
+    public ClienteGetDTO incrementarInasistencias(Long id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+                .orElseThrow(() -> new BusinessException("Cliente no encontrado con ID: " + id));
 
         cliente.setInasistencias(cliente.getInasistencias() + 1);
-        Cliente clienteActualizado = clienteRepository.save(cliente);
-        return modelMapper.map(clienteActualizado, ClienteDTO.class);
+        return toResponseDTO(clienteRepository.save(cliente));
     }
 
-    @Override
-    public boolean existsByCorreo(String correo) {
-        return clienteRepository.existsByCorreo(correo);
+    private ClienteGetDTO toResponseDTO(Cliente cliente) {
+        ClienteGetDTO dto = modelMapper.map(cliente, ClienteGetDTO.class);
+
+        // Mapeo seguro de relaciones
+        if (cliente.getInscripciones() != null) {
+            dto.setInscripcionesIds(
+                    cliente.getInscripciones().stream()
+                            .map(Inscripcion::getId)
+                            .collect(Collectors.toList())
+            );
+        }
+
+        return dto;
     }
 
-    @Override
-    public Long authenticateCliente(String email, String password) {
-        Cliente cliente = clienteRepository.getClienteByCorreoAndContrasena(email, password)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return cliente.getId();
-    }
-
-    @Override
-    public ClienteDTO obtenerClientePorCorreo(String correo) {
-        Cliente cliente = clienteRepository.getClienteByCorreo(correo)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        return modelMapper.map(cliente, ClienteDTO.class);
+    private ClaseGetDTO toClaseResponseDTO(Clase clase) {
+        return modelMapper.map(clase, ClaseGetDTO.class);
     }
 }

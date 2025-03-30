@@ -21,42 +21,56 @@ public abstract class Usuario {
     private Long id;
 
     @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder los 100 caracteres")
-    @Column(nullable = false, length = 100)
+    @Size(max = 100)
     private String nombre;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
-    @Column(nullable = false)
     private String contrasena;
 
-    @NotBlank(message = "El correo no puede estar vacío")
-    @Email(message = "Debe ser un correo electrónico válido")
-    @Column(unique = true, nullable = false, length = 100)
+    @NotBlank
+    @Email
+    @Column(unique = true)
     private String correo;
 
-    @NotBlank(message = "El teléfono no puede estar vacío")
-    @Pattern(regexp = "^[0-9]{9}$", message = "El teléfono debe tener 9 dígitos")
-    @Column(unique = true, nullable = false, length = 9)
+    @NotBlank
+    @Pattern(regexp = "^[0-9]{9}$")
     private String telefono;
 
-    @NotNull(message = "La fecha de nacimiento no puede estar vacía")
-    @Past(message = "La fecha de nacimiento debe ser en el pasado")
-    @Column(nullable = false)
-    private LocalDate fechaDeNacimiento;
-
-    @NotNull(message = "El tipo de usuario no puede estar vacío")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_usuario", nullable = false)
-    private TipoUsuario tipoUsuario;
+    @NotNull
+    @Past
+    private LocalDate fechaNacimiento;
 
     @CreationTimestamp
-    @Column(name = "fecha_registro", updatable = false, nullable = false)
+    @Column(updatable = false)
     private LocalDateTime fechaRegistro;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private TipoUsuario tipoUsuario;
 
     @Column(nullable = false)
     private boolean activo = true;
 
     public enum TipoUsuario {
-        TRABAJADOR, CLIENTE
+        CLIENTE, TRABAJADOR
     }
+
+    @PrePersist
+    @PreUpdate
+    protected final void validarUsuario() {
+        validarTipoUsuario();
+        validacionesComunes();
+        validacionesEspecificas();
+    }
+
+    private void validarTipoUsuario() {
+        if (tipoUsuario == null) {
+            throw new IllegalStateException("El tipo de usuario no puede ser nulo");
+        }
+    }
+
+    private void validacionesComunes() {
+    }
+
+    protected abstract void validacionesEspecificas();
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/register_page.dart';
-import '../components/barra_inferior_botones.dart';
-import 'login_page.dart';
+import 'package:frontend/pages/auth_pages/register.dart';
+import 'package:frontend/utils/common_widgets.dart';
+import 'login.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -10,7 +10,7 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: BottomNavigationBarCustom(
+      bottomNavigationBar: CommonWidgets.buildAuthBottomBar(
         textButton1: "Iniciar sesion",
         textButton2: "Registrar",
         onClick1: () {

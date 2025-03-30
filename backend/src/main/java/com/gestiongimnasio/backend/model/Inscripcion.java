@@ -1,7 +1,8 @@
 package com.gestiongimnasio.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,26 +16,28 @@ public class Inscripcion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cliente", nullable = false)
+    @JoinColumn(nullable = false)
+    @JsonIgnoreProperties("inscripciones")
     private Cliente cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_clase", nullable = false)
+    @JoinColumn(nullable = false)
+    @JsonIgnoreProperties("inscripciones")
     private Clase clase;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_pago")
     private Pago pago;
 
-    @NotNull(message = "La fecha de registro no puede estar vacía")
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
+    @NotNull
+    @Column(updatable = false)
     private LocalDate fechaRegistro;
 
-    @NotNull(message = "El estado de pago no puede estar vacío")
-    @Column(name = "estado_pago", nullable = false)
+    private boolean asistio = false;
+
+    @NotNull
     private Boolean estadoPago = false;
 
     @PrePersist

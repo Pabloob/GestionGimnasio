@@ -1,17 +1,27 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.PagoDTO;
+import com.gestiongimnasio.backend.dto.get.PagoGetDTO;
+import com.gestiongimnasio.backend.dto.post.PagoPostDTO;
+import com.gestiongimnasio.backend.dto.put.PagoPutDTO;
 import com.gestiongimnasio.backend.model.Pago;
 
 import java.util.List;
 
 public interface PagoService {
-    PagoDTO savePago(PagoDTO pagoDTO);
-    List<PagoDTO> getAllPagos();
-    PagoDTO getPagoById(Integer id);
-    PagoDTO updatePago(Integer id, PagoDTO pagoDTO);
-    void deletePago(Integer id);
-    List<PagoDTO> getPagosByCliente(Long clienteId);
-    List<PagoDTO> getPagosByEstado(Pago.EstadoPago estado);
-    PagoDTO marcarComoCompletado(Integer id);
+    PagoGetDTO getById(Long id);
+
+    List<PagoGetDTO> getByCliente(Long clienteId);
+
+    List<PagoGetDTO> getByEstado(Pago.EstadoPago estado);
+
+    List<PagoGetDTO> getAll();
+
+    PagoGetDTO save(PagoPostDTO pagoDTO);
+
+    PagoGetDTO update(Long id, PagoPutDTO pagoDTO);
+
+    void delete(Long id);
+
+    PagoGetDTO marcarComoCompletado(Long id);
+
 }
