@@ -4,13 +4,14 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
-public class ClaseHorarioPostDTO {
+public class HorarioPostDTO {
 
     @NotNull
-    private Long clase;
+    private Long claseId;
 
     @NotNull
     private DayOfWeek diaSemana;
@@ -22,8 +23,14 @@ public class ClaseHorarioPostDTO {
     private LocalTime horaFin;
 
     @NotNull
-    private Long sala;
+    private Long salaId;
 
     @NotNull
-    private Long instructor;
+    private Long instructorId;
+
+    @NotNull
+    private LocalDate fechasInicio;
+
+    @NotNull
+    private LocalDate fechaFin;
 }

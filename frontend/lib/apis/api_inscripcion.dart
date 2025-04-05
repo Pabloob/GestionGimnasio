@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:frontend/apis/api_service.dart';
@@ -20,25 +19,25 @@ class ApiInscripcion {
   }
 
   // Obtener una inscripcion por ID
-  Future<List<InscripcionGetDTO>> obtenerPorId(Long id) async {
+  Future<InscripcionGetDTO> obtenerPorId(int id) async {
     final response = await _apiService.get('/api/inscripciones/$id');
-    return (response as List)
-        .map((json) => InscripcionGetDTO.fromJson(json))
-        .toList();
+    return InscripcionGetDTO.fromJson(response);
   }
 
-  // Obtener una inscripcion por cliente
-  Future<List<InscripcionGetDTO>> obtenerPorCliente(Long id) async {
+  // Obtener inscripciones por cliente
+  Future<List<InscripcionGetDTO>> obtenerPorCliente(int id) async {
     final response = await _apiService.get('/api/inscripciones/cliente/$id');
     return (response as List)
         .map((json) => InscripcionGetDTO.fromJson(json))
         .toList();
   }
-  // Obtener una inscripcion por clase
 
-  Future<InscripcionGetDTO> obtenerPorClase(Long id) async {
+  // Obtener inscripciones por clase
+  Future<List<InscripcionGetDTO>> obtenerPorClase(int id) async {
     final response = await _apiService.get('/api/inscripciones/clase/$id');
-    return InscripcionGetDTO.fromJson(response);
+    return (response as List)
+        .map((json) => InscripcionGetDTO.fromJson(json))
+        .toList();
   }
 
   // Crear una nueva inscripcion
@@ -60,7 +59,7 @@ class ApiInscripcion {
 
   // Actualizar una inscripcion
   Future<InscripcionGetDTO> actualizarInscripcion(
-    Long id,
+    int id,
     InscripcionPutDTO inscripcion,
   ) async {
     final response = await _apiService.put(
@@ -70,23 +69,13 @@ class ApiInscripcion {
     return InscripcionGetDTO.fromJson(response);
   }
 
-  // Confirmar pago
-  Future<InscripcionGetDTO> confirmarPago(Long id) async {
-    final response = await _apiService.put('/api/inscripciones/pago/$id', {});
-    return InscripcionGetDTO.fromJson(response);
+  // Eliminar una inscripcion
+  Future<void> eliminarInscripcion(int id) async {
+    await _apiService.delete('/api/inscripciones/$id');
   }
 
   // Confirmar asistencia
-  Future<InscripcionGetDTO> confirmarAsistencia(int id, int idPago) async {
-    final body = {'idPago': idPago};
-
-    final response = await _apiService.put('/api/inscripciones/pago/$id', body);
-
-    return InscripcionGetDTO.fromJson(response);
-  }
-
-  // Eliminar una inscripcion
-  Future<void> eliminarInscripcion(Long id) async {
-    await _apiService.delete('/api/inscripciones/$id');
+  Future<void> registrarAsistencia(int id) async {
+    await _apiService.patch('/api/inscripciones/$id/registrar-asistencia');
   }
 }

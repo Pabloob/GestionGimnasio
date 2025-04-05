@@ -8,20 +8,21 @@ class ApiService {
   final String _baseUrl;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  ApiService({String baseUrl = 'http://192.168.0.14:8080'})
-      : _baseUrl = baseUrl;
+  ApiService({String baseUrl = 'http://192.168.1.120:8080'}) : _baseUrl = baseUrl;
 
   // Método genérico para manejar solicitudes HTTP
   Future<dynamic> _request(
-      String method,
-      String endpoint, {
-        Map<String, dynamic>? body,
-        bool requiresAuth = true,
-      }) async {
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? body,
+    bool requiresAuth = true,
+  }) async {
     try {
       final uri = Uri.parse('$_baseUrl$endpoint');
+
       late http.Response response;
-      final headers = <String, String>{'Content-Type': 'application/json'};
+
+      final headers = <String, String>{"Content-Type": "application/json"};
 
       // Agregar token JWT si es necesario
       if (requiresAuth) {
@@ -53,6 +54,9 @@ class ApiService {
         case 'DELETE':
           response = await http.delete(uri, headers: headers);
           break;
+        case 'PATCH':
+          response = await http.patch(uri, headers: headers);
+          break;
         default:
           throw Exception('Método HTTP no soportado: $method');
       }
@@ -74,14 +78,13 @@ class ApiService {
 
     if (response.body.isEmpty) {
       if (statusCode == 204) {
-        return null; // Respuesta sin contenido
+        return null;
       }
       throw Exception('Respuesta vacía con estado $statusCode');
     }
 
     try {
       final decoded = json.decode(response.body);
-
       if (statusCode >= 200 && statusCode < 300) {
         return decoded;
       } else {
@@ -100,10 +103,11 @@ class ApiService {
   }
 
   Future<dynamic> post(
-      String endpoint,
-      Map<String, dynamic> body, {
-        bool requiresAuth = true,
-      }) async {
+    String endpoint,
+    Map<String, dynamic> body, {
+    bool requiresAuth = true,
+  }) async {
+
     return await _request(
       'POST',
       endpoint,
@@ -113,10 +117,10 @@ class ApiService {
   }
 
   Future<dynamic> put(
-      String endpoint,
-      Map<String, dynamic> body, {
-        bool requiresAuth = true,
-      }) async {
+    String endpoint,
+    Map<String, dynamic> body, {
+    bool requiresAuth = true,
+  }) async {
     return await _request(
       'PUT',
       endpoint,
@@ -128,5 +132,9 @@ class ApiService {
   Future<void> delete(String endpoint, {bool requiresAuth = true}) async {
     await _request('DELETE', endpoint, requiresAuth: requiresAuth);
   }
-
+  
+  
+  Future<void> patch(String endpoint, {bool requiresAuth = true}) async {
+    await _request('PATCH', endpoint, requiresAuth: requiresAuth);
+  }
 }

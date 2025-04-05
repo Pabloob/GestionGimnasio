@@ -2,15 +2,14 @@ package com.gestiongimnasio.backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-import com.gestiongimnasio.backend.security.CustomUserDetailsService.UserWithId;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,7 +26,6 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        UserWithId userDetails = (UserWithId) authentication.getPrincipal();
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
@@ -38,7 +36,6 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("roles", authorities)
-                .claim("userId", userDetails.getUserId())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
@@ -47,10 +44,6 @@ public class JwtTokenProvider {
 
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
-    }
-
-    public Long getUserIdFromToken(String token) {
-        return Long.parseLong(Objects.requireNonNull(parseClaims(token).get("userId")).toString());
     }
 
     public boolean validateToken(String token) {

@@ -3,18 +3,20 @@ package com.gestiongimnasio.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
 @Data
-public class ClaseHorario {
+@ToString(exclude = {"clase", "sala", "instructor"})
+public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @ManyToOne
     @JoinColumn(name = "clase_id", nullable = false)
@@ -29,6 +31,12 @@ public class ClaseHorario {
     @NotNull
     private LocalTime horaFin;
 
+    @NotNull
+    private LocalDate fechasInicio;
+
+    @NotNull
+    private LocalDate fechaFin;
+
     @ManyToOne
     @JoinColumn(name = "sala_id", nullable = false)
     private Sala sala;
@@ -37,16 +45,6 @@ public class ClaseHorario {
     @JoinColumn(name = "instructor_id", nullable = false)
     private Trabajador instructor;
 
-    public void setSala(Sala sala) {
-        this.sala = sala;
-        sala.getHorarios().add(this);
-    }
-
-    public void setInstructor(Trabajador instructor) {
-        this.instructor = instructor;
-        instructor.getClasesHorario().add(this);
-    }
-
     @PrePersist
     @PreUpdate
     private void validar() {
@@ -54,4 +52,5 @@ public class ClaseHorario {
             throw new IllegalStateException("La hora de fin debe ser posterior a la hora de inicio");
         }
     }
+
 }

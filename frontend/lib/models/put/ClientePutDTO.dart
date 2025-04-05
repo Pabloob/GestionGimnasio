@@ -1,45 +1,22 @@
-class ClientePutDTO {
-  int id;
-  String? nombre;
-  String? contrasena;
-  String? correo;
-  String? telefono;
-  int? inasistencias;
-  bool? activo;
+import 'package:frontend/models/put/UsuarioPutDTO.dart';
 
-  ClientePutDTO({
-    required this.id,
-    this.nombre,
-    this.contrasena,
-    this.correo,
-    this.telefono,
-    this.inasistencias,
-    this.activo,
-  });
+class ClientePutDTO {
+  final UsuarioPutDTO? usuarioPutDTO;
+
+  ClientePutDTO({this.usuarioPutDTO});
 
   // Factory para crear una instancia desde JSON
   factory ClientePutDTO.fromJson(Map<String, dynamic> json) {
     return ClientePutDTO(
-      id: json['id'],
-      nombre: json['nombre'],
-      contrasena: json['contrasena'],
-      correo: json['correo'],
-      telefono: json['telefono'],
-      inasistencias: json['inasistencias'],
-      activo: json['activo'],
+      usuarioPutDTO:
+          json['usuarioPutDTO'] != null
+              ? UsuarioPutDTO.fromJson(json['usuarioPutDTO'])
+              : null,
     );
   }
 
   // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'nombre': nombre,
-      'contrasena': contrasena,
-      'correo': correo,
-      'telefono': telefono,
-      'inasistencias': inasistencias,
-      'activo': activo,
-    };
+    return {'usuarioPutDTO': usuarioPutDTO?.toJson()};
   }
 }

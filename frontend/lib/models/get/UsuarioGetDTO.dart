@@ -1,24 +1,24 @@
 import 'package:frontend/models/enums.dart';
 
 class UsuarioGetDTO {
-  final int? id;
-  final String? nombre;
-  final String? correo;
-  final String? telefono;
-  final DateTime? fechaNacimiento;
-  final DateTime? fechaRegistro;
-  final TipoUsuario? tipoUsuario;
-  final bool? activo;
+  final int id;
+  final String nombre;
+  final String correo;
+  final String telefono;
+  final DateTime fechaNacimiento;
+  final DateTime fechaRegistro;
+  final TipoUsuario tipoUsuario;
+  final bool activo;
 
   UsuarioGetDTO({
-    this.id,
-    this.nombre,
-    this.correo,
-    this.telefono,
-    this.fechaNacimiento,
-    this.fechaRegistro,
-    this.tipoUsuario,
-    this.activo,
+    required this.id,
+    required this.nombre,
+    required this.correo,
+    required this.telefono,
+    required this.fechaNacimiento,
+    required this.fechaRegistro,
+    required this.tipoUsuario,
+    required this.activo,
   });
 
   // Factory para crear una instancia desde JSON
@@ -44,9 +44,9 @@ class UsuarioGetDTO {
       'nombre': nombre,
       'correo': correo,
       'telefono': telefono,
-      'fechaNacimiento': fechaNacimiento?.toIso8601String(),
-      'fechaRegistro': fechaRegistro?.toIso8601String(),
-      'tipoUsuario': tipoUsuario?.name,
+      'fechaNacimiento': fechaNacimiento.toIso8601String(),
+      'fechaRegistro': fechaRegistro.toIso8601String(),
+      'tipoUsuario': tipoUsuario.name,
       'activo': activo,
     };
   }

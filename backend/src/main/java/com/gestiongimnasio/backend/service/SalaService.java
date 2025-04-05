@@ -1,34 +1,20 @@
-package com.gestiongimnasio.backend.service.impl;
+package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
-import com.gestiongimnasio.backend.dto.post.ClasePostDTO;
-import com.gestiongimnasio.backend.dto.put.ClasePutDTO;
-import org.springframework.transaction.annotation.Transactional;
+import com.gestiongimnasio.backend.dto.get.SalaGetDTO;
+import com.gestiongimnasio.backend.dto.post.SalaPostDTO;
+import com.gestiongimnasio.backend.dto.put.SalaPutDTO;
 
 import java.util.List;
 
-public interface ClaseService {
-    ClaseGetDTO getById(Long id);
+public interface SalaService {
+    List<SalaGetDTO> findAllSalas();
 
-    @Transactional(readOnly = true)
-    List<ClaseGetDTO> getClasesByCliente(Long clienteId);
+    SalaGetDTO findSalaById(Long id);
 
-    List<ClaseGetDTO> getAll();
+    SalaGetDTO saveSala(SalaPostDTO salaPostDTO);
 
-    ClaseGetDTO getByNombre(String nombreClase);
+    SalaGetDTO updateSala(Long id, SalaPutDTO salaPutDTO);
 
+    void deleteSala(Long id);
 
-    ClaseGetDTO save(ClasePostDTO claseDTO);
-
-    ClaseGetDTO update(Long id, ClasePutDTO claseDTO);
-
-    void delete(Long id);
-
-    void confirmarAsistencias(Long idClase);
-
-    void deactivate(Long id);
-
-    List<ClaseGetDTO> getClasesByInstructor(Long instructorId);
-
-    long countInscritosByClaseId(Long claseId);
 }

@@ -1,11 +1,13 @@
 package com.gestiongimnasio.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "trabajadores")
@@ -26,9 +28,6 @@ public class Trabajador extends Usuario {
     @NotNull
     @Enumerated(EnumType.STRING)
     private TipoTrabajador tipoTrabajador;
-
-    @OneToMany(mappedBy = "instructor")
-    private List<Clase> clases = new ArrayList<>();
 
     public enum TipoTrabajador {
         ADMIN, INSTRUCTOR, RECEPCIONISTA

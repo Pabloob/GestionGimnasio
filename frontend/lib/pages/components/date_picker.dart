@@ -26,7 +26,7 @@ class DatePickerWidget extends StatelessWidget {
           controller: controller,
           onFieldSubmitted: onFieldSubmitted,
           decoration: AppTheme.inputDecoration(label).copyWith(
-            prefixIcon: Icon(Icons.calendar_today, color: AppTheme.primaryColor),
+            prefixIcon: Icon(Icons.calendar_today, color: AppTheme.secondaryColor),
           ),
         ),
       ),

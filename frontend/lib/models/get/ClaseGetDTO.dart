@@ -1,56 +1,28 @@
-import 'dart:convert';
-
-import 'package:frontend/models/enums.dart';
-import 'package:intl/intl.dart';
-
 class ClaseGetDTO {
-  final int? id;
-  final String? nombre;
-  final double? precio;
-  final DateTime? horaInicio;
-  final DateTime? horaFin;
-  final int? instructorId;
-  final String? instructorNombre;
-  final int? totalInscritos;
-  final int? capacidadMaxima;
-  final String? sala;
-  final Set<Dia>? dias;
-  final bool? activa;
+  final int id;
+  final String nombre;
+  final int capacidadMaxima;
+  final double precio;
+  final String descripcion;
+  final bool activa;
 
   ClaseGetDTO({
-    this.id,
-    this.nombre,
-    this.precio,
-    this.horaInicio,
-    this.horaFin,
-    this.instructorId,
-    this.instructorNombre,
-    this.totalInscritos,
-    this.capacidadMaxima,
-    this.sala,
-    this.dias,
-    this.activa,
+    required this.id,
+    required this.nombre,
+    required this.capacidadMaxima,
+    required this.precio,
+    required this.descripcion,
+    required this.activa,
   });
 
   // Factory para crear una instancia desde JSON
   factory ClaseGetDTO.fromJson(Map<String, dynamic> json) {
     return ClaseGetDTO(
       id: json['id'],
-      nombre: json['nombre'] != null ? utf8.decode(json['nombre'].runes.toList()) : null,
-      precio: json['precio']?.toDouble(),
-      horaInicio: DateFormat("HH:mm:ss").parse(json['horaInicio']),
-      horaFin: DateFormat("HH:mm:ss").parse(json['horaFin']),
-      instructorId: json['instructorId'],
-      instructorNombre: json['instructorNombre'],
-      totalInscritos: json['totalInscritos'],
+      nombre: json['nombre'],
       capacidadMaxima: json['capacidadMaxima'],
-      sala: json['sala'],
-      dias:
-          (json['dias'] as List)
-              .map(
-                (d) => Dia.values.firstWhere((e) => e.toString() == 'Dia.$d'),
-              )
-              .toSet(),
+      precio: json['precio']?.toDouble(),
+      descripcion: json['descripcion'],
       activa: json['activa'],
     );
   }
@@ -60,30 +32,10 @@ class ClaseGetDTO {
     return {
       'id': id,
       'nombre': nombre,
-      'precio': precio,
-      'horaInicio': horaInicio?.toIso8601String(),
-      'horaFin': horaFin?.toIso8601String(),
-      'instructorId': instructorId,
-      'instructorNombre': instructorNombre,
-      'totalInscritos': totalInscritos,
       'capacidadMaxima': capacidadMaxima,
-      'sala': sala,
-      'dias': dias?.map((d) => d.toString().split('.').last).toList(),
+      'precio': precio,
+      'descripcion': descripcion,
       'activa': activa,
     };
-  }
-
-  String? getDias() {
-    Map<Dia, String> abreviaciones = {
-      Dia.LUNES: "L",
-      Dia.MARTES: "M",
-      Dia.MIERCOLES: "X",
-      Dia.JUEVES: "J",
-      Dia.VIERNES: "V",
-      Dia.SABADO: "S",
-      Dia.DOMINGO: "D",
-    };
-
-    return dias?.map((dia) => abreviaciones[dia]!).join(",");
   }
 }

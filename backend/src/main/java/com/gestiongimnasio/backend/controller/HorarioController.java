@@ -1,9 +1,9 @@
 package com.gestiongimnasio.backend.controller;
 
-import com.gestiongimnasio.backend.dto.get.ClaseHorarioGetDTO;
-import com.gestiongimnasio.backend.dto.post.ClaseHorarioPostDTO;
-import com.gestiongimnasio.backend.dto.put.ClaseHorarioPutDTO;
-import com.gestiongimnasio.backend.service.ClaseHorarioService;
+import com.gestiongimnasio.backend.dto.get.HorarioGetDTO;
+import com.gestiongimnasio.backend.dto.post.HorarioPostDTO;
+import com.gestiongimnasio.backend.dto.put.HorarioPutDTO;
+import com.gestiongimnasio.backend.service.HorarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,55 +12,56 @@ import java.time.DayOfWeek;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reservas")
-public class ClaseHorarioController {
+@RequestMapping("/api/horarios")
+public class HorarioController {
 
     @Autowired
-    private ClaseHorarioService reservaService;
+    private HorarioService horarioService;
 
     @GetMapping
-    public ResponseEntity<List<ClaseHorarioGetDTO>> getAllReservas() {
-        return ResponseEntity.ok(reservaService.findAll());
+    public ResponseEntity<List<HorarioGetDTO>> getAllHorarios() {
+        return ResponseEntity.ok(horarioService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClaseHorarioGetDTO> getReservaById(@PathVariable Long id) {
-        return ResponseEntity.ok(reservaService.findById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<ClaseHorarioGetDTO> createReserva(@RequestBody ClaseHorarioPostDTO claseHorarioPostDTO) {
-        return ResponseEntity.ok(reservaService.create(claseHorarioPostDTO));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ClaseHorarioGetDTO> updateReserva(@PathVariable Long id, @RequestBody ClaseHorarioPutDTO claseHorarioPutDTO) {
-        return ResponseEntity.ok(reservaService.update(id, claseHorarioPutDTO));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReserva(@PathVariable Long id) {
-        reservaService.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<HorarioGetDTO> getHorarioById(@PathVariable Long id) {
+        return ResponseEntity.ok(horarioService.findById(id));
     }
 
     @GetMapping("/clase/{claseId}")
-    public ResponseEntity<List<ClaseHorarioGetDTO>> getReservasByClase(@PathVariable Long claseId) {
-        return ResponseEntity.ok(reservaService.findByClase(claseId));
+    public ResponseEntity<List<HorarioGetDTO>> getHorariosByClase(@PathVariable Long claseId) {
+        return ResponseEntity.ok(horarioService.findByClase(claseId));
     }
 
     @GetMapping("/sala/{salaId}")
-    public ResponseEntity<List<ClaseHorarioGetDTO>> getReservasBySala(@PathVariable Long salaId) {
-        return ResponseEntity.ok(reservaService.findBySala(salaId));
+    public ResponseEntity<List<HorarioGetDTO>> getHorariosBySala(@PathVariable Long salaId) {
+        return ResponseEntity.ok(horarioService.findBySala(salaId));
     }
 
     @GetMapping("/instructor/{instructorId}")
-    public ResponseEntity<List<ClaseHorarioGetDTO>> getReservasByInstructor(@PathVariable Long instructorId) {
-        return ResponseEntity.ok(reservaService.findByInstructor(instructorId));
+    public ResponseEntity<List<HorarioGetDTO>> getHorariosByInstructor(@PathVariable Long instructorId) {
+        return ResponseEntity.ok(horarioService.findByInstructor(instructorId));
     }
 
     @GetMapping("/dia/{dia}")
-    public ResponseEntity<List<ClaseHorarioGetDTO>> getReservasByDia(@PathVariable DayOfWeek dia) {
-        return ResponseEntity.ok(reservaService.findByDia(dia));
+    public ResponseEntity<List<HorarioGetDTO>> getHorariosByDia(@PathVariable DayOfWeek dia) {
+        return ResponseEntity.ok(horarioService.findByDia(dia));
     }
+
+    @PostMapping
+    public ResponseEntity<HorarioGetDTO> createHorario(@RequestBody HorarioPostDTO horarioPostDTO) {
+        return ResponseEntity.ok(horarioService.create(horarioPostDTO));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<HorarioGetDTO> updateHorario(@PathVariable Long id, @RequestBody HorarioPutDTO horarioPutDTO) {
+        return ResponseEntity.ok(horarioService.update(id, horarioPutDTO));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteHorario(@PathVariable Long id) {
+        horarioService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

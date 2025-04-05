@@ -19,8 +19,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -45,7 +43,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Permitir endpoints públicos
-                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/usuarios/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
 
                         .anyRequest().authenticated()

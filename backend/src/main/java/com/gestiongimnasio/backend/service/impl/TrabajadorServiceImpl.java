@@ -1,127 +1,140 @@
 package com.gestiongimnasio.backend.service.impl;
 
-import com.gestiongimnasio.backend.dto.get.ClaseGetDTO;
 import com.gestiongimnasio.backend.dto.get.TrabajadorGetDTO;
 import com.gestiongimnasio.backend.dto.post.TrabajadorPostDTO;
 import com.gestiongimnasio.backend.dto.put.TrabajadorPutDTO;
-import com.gestiongimnasio.backend.model.Clase;
-import com.gestiongimnasio.backend.model.Trabajador;
-import com.gestiongimnasio.backend.repository.TrabajadorRepository;
+import com.gestiongimnasio.backend.mappers.TrabajadorMapper;
+import com.gestiongimnasio.backend.model.*;
+import com.gestiongimnasio.backend.repository.*;
 import com.gestiongimnasio.backend.service.TrabajadorService;
-import com.gestiongimnasio.backend.utils.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class TrabajadorServiceImpl implements TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
-    private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ClaseHorarioRepository claseHorarioRepository;
+    private final TrabajadorMapper trabajadorMapper;
 
     @Override
-    @Transactional(readOnly = true)
-    public TrabajadorGetDTO getById(Long id) {
+    public List<TrabajadorGetDTO> findAllTrabajadores() {
+        return trabajadorRepository.findAll()
+                .stream()
+                .map(trabajadorMapper::toTrabajadorGetDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public TrabajadorGetDTO findTrabajadorById(Long id) {
         Trabajador trabajador = trabajadorRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
-        return toResponseDTO(trabajador);
+                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado con ID: " + id));
+        return trabajadorMapper.toTrabajadorGetDTO(trabajador);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<TrabajadorGetDTO> getByTipo(Trabajador.TipoTrabajador tipo) {
-        if (tipo == null) {
-            throw new IllegalArgumentException("Tipo de trabajador no puede ser nulo");
+    public TrabajadorGetDTO saveTrabajador(TrabajadorPostDTO trabajadorPostDTO) {
+
+        if (trabajadorRepository.existsByCorreo(trabajadorPostDTO.getUsuarioPostDTO().getCorreo())) {
+            throw new RuntimeException("El correo ya está registrado");
         }
 
-        return trabajadorRepository.findByTipoTrabajador(tipo).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        if (trabajadorPostDTO.getHoraFin().isBefore(trabajadorPostDTO.getHoraInicio())) {
+            throw new RuntimeException("La hora de fin debe ser posterior a la hora de inicio");
+        }
+
+        trabajadorPostDTO.getUsuarioPostDTO().setContrasena(passwordEncoder.encode(trabajadorPostDTO.getUsuarioPostDTO().getContrasena()));
+
+        Trabajador trabajador = trabajadorMapper.fromTrabajadorPostDTO(trabajadorPostDTO);
+        trabajador.setTipoUsuario(Usuario.TipoUsuario.TRABAJADOR);
+
+        Trabajador savedTrabajador = trabajadorRepository.save(trabajador);
+        return trabajadorMapper.toTrabajadorGetDTO(savedTrabajador);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<TrabajadorGetDTO> getAll() {
-        return trabajadorRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+    public TrabajadorGetDTO updateTrabajador(Long id, TrabajadorPutDTO trabajadorPutDTO) {
+        Trabajador trabajador = trabajadorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado con ID: " + id));
+
+        if (trabajadorPutDTO.getUsuarioPutDTO().getCorreo() != null &&
+                !trabajadorPutDTO.getUsuarioPutDTO().getCorreo().equals(trabajador.getCorreo()) &&
+                trabajadorRepository.existsByCorreo(trabajadorPutDTO.getUsuarioPutDTO().getCorreo())) {
+            throw new RuntimeException("El nuevo correo ya está registrado");
+        }
+
+        if (trabajadorPutDTO.getHoraFin() != null && trabajadorPutDTO.getHoraInicio() != null &&
+                trabajadorPutDTO.getHoraFin().isBefore(trabajadorPutDTO.getHoraInicio())) {
+            throw new RuntimeException("La hora de fin debe ser posterior a la hora de inicio");
+        }
+
+        if (trabajadorPutDTO.getUsuarioPutDTO().getContrasena() != null && !trabajadorPutDTO.getUsuarioPutDTO().getContrasena().isEmpty()) {
+            trabajadorPutDTO.getUsuarioPutDTO().setContrasena(passwordEncoder.encode(trabajadorPutDTO.getUsuarioPutDTO().getContrasena()));
+        }
+
+        trabajadorMapper.fromTrabajadorPutDTO(trabajadorPutDTO, trabajador);
+
+        Trabajador updatedTrabajador = trabajadorRepository.save(trabajador);
+        return trabajadorMapper.toTrabajadorGetDTO(updatedTrabajador);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<ClaseGetDTO> getClasesImpartidas(Long id) {
-        Trabajador trabajador = trabajadorRepository.findByIdWithClases(id)
-                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
+    public void deleteTrabajador(Long id) {
+        Trabajador trabajador = trabajadorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado con ID: " + id));
 
-        if (trabajador.getTipoTrabajador() != Trabajador.TipoTrabajador.INSTRUCTOR) {
-            throw new BusinessException("Solo los instructores pueden impartir clases");
+        if (claseHorarioRepository.existsByInstructorId(id)) {
+            throw new RuntimeException("No se puede eliminar un trabajador con reservas asignadas");
         }
 
-        return trabajador.getClases().stream()
-                .map(this::toClaseResponseDTO)
-                .collect(Collectors.toList());
+        trabajadorRepository.delete(trabajador);
     }
 
     @Override
-    public TrabajadorGetDTO save(TrabajadorPostDTO trabajadorDTO) {
-        if (trabajadorDTO == null) {
-            throw new IllegalArgumentException("Datos del trabajador no pueden ser nulos");
+    public List<TrabajadorGetDTO> findByTipo(String tipoTrabajador) {
+        try {
+            Trabajador.TipoTrabajador tipo = Trabajador.TipoTrabajador.valueOf(tipoTrabajador.toUpperCase());
+            return trabajadorRepository.findByTipoTrabajador(tipo)
+                    .stream()
+                    .map(trabajadorMapper::toTrabajadorGetDTO)
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Tipo de trabajador no válido: " + tipoTrabajador);
         }
-
-        if (trabajadorRepository.existsByCorreo(trabajadorDTO.getCorreo())) {
-            throw new BusinessException("El correo ya está registrado");
-        }
-
-        Trabajador trabajador = modelMapper.map(trabajadorDTO, Trabajador.class);
-        trabajador.setContrasena(passwordEncoder.encode(trabajadorDTO.getContrasena()));
-        trabajador.setActivo(true);
-
-        Trabajador trabajadorGuardado = trabajadorRepository.save(trabajador);
-        return toResponseDTO(trabajadorGuardado);
     }
 
     @Override
-    public TrabajadorGetDTO update(Long id, TrabajadorPutDTO trabajadorDTO) {
-        if (!id.equals(trabajadorDTO.getId())) {
-            throw new IllegalArgumentException("ID de trabajador no coincide");
-        }
+    public boolean estaDisponible(Long trabajadorId, DayOfWeek dia, LocalTime horaInicio, LocalTime horaFin) {
+        Trabajador trabajador = trabajadorRepository.findById(trabajadorId)
+                .orElseThrow(() -> new RuntimeException("Trabajador no encontrado con ID: " + trabajadorId));
 
-        Trabajador trabajadorExistente = trabajadorRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Trabajador no encontrado con ID: " + id));
+        boolean dentroHorarioLaboral = !horaInicio.isBefore(trabajador.getHoraInicio()) &&
+                !horaFin.isAfter(trabajador.getHoraFin());
 
-        modelMapper.getConfiguration().setSkipNullEnabled(true);
-        modelMapper.map(trabajadorDTO, trabajadorExistente);
+        boolean sinReservas = claseHorarioRepository
+                .findByInstructorIdAndDiaSemana(trabajadorId, dia)
+                .stream()
+                .noneMatch(reserva -> horariosSeSolapan(
+                        reserva.getHoraInicio(),
+                        reserva.getHoraFin(),
+                        horaInicio,
+                        horaFin
+                ));
 
-        if (trabajadorDTO.getContrasena() != null && !trabajadorDTO.getContrasena().isBlank()) {
-            trabajadorExistente.setContrasena(passwordEncoder.encode(trabajadorDTO.getContrasena()));
-        }
-
-        return toResponseDTO(trabajadorRepository.save(trabajadorExistente));
+        return dentroHorarioLaboral && sinReservas;
     }
 
-    private TrabajadorGetDTO toResponseDTO(Trabajador trabajador) {
-        TrabajadorGetDTO dto = modelMapper.map(trabajador, TrabajadorGetDTO.class);
-
-        if (trabajador.getClases() != null) {
-            dto.setClasesIds(
-                    trabajador.getClases().stream()
-                            .map(Clase::getId)
-                            .collect(Collectors.toList())
-            );
-        }
-
-        return dto;
-    }
-
-    private ClaseGetDTO toClaseResponseDTO(Clase clase) {
-        return modelMapper.map(clase, ClaseGetDTO.class);
+    private boolean horariosSeSolapan(LocalTime inicio1, LocalTime fin1, LocalTime inicio2, LocalTime fin2) {
+        return inicio1.isBefore(fin2) && fin1.isAfter(inicio2);
     }
 }

@@ -1,6 +1,5 @@
 package com.gestiongimnasio.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -12,33 +11,25 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"cliente", "clase"})
 public class Inscripcion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    @JsonIgnoreProperties("inscripciones")
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    @JsonIgnoreProperties("inscripciones")
+    @ManyToOne
+    @JoinColumn(name = "clase_id", nullable = false)
     private Clase clase;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Pago pago;
-
     @NotNull
-    @Column(updatable = false)
     private LocalDate fechaRegistro;
 
     private boolean asistio = false;
-
-    @NotNull
-    private Boolean estadoPago = false;
 
     @PrePersist
     private void setFechaRegistro() {

@@ -1,39 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/post/ClientePostDTO.dart';
-import 'package:frontend/utils/common_widgets.dart';
-import 'package:frontend/utils/date_picker.dart';
-import 'package:intl/intl.dart';
-import '../../apis/api_cliente.dart';
-import '../../apis/api_service.dart';
-import '../../utils/campo_contrasena.dart';
+import 'package:frontend/providers/cliente_providers.dart';
 
-class RegisterPage extends StatefulWidget {
+import '../../models/enums.dart';
+import '../../models/post/UsuarioPostDTO.dart';
+import '../../theme/app_theme.dart';
+import '../components/common_widgets.dart';
+import '../components/date_picker.dart';
+
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _contrasenaController = TextEditingController();
-  final TextEditingController _correoController = TextEditingController();
-  final TextEditingController _telefonoController = TextEditingController();
-  final TextEditingController _fechaDeNacimientoController =
-      TextEditingController();
-  DateTime? _selectedDate;
-  final ApiCliente _clienteService = ApiCliente(apiService: ApiService());
-  String _mensajeError = "";
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _birthDateController = TextEditingController();
+
+  DateTime? _birthDate;
   bool _isLoading = false;
+  String _errorMessage = '';
 
   @override
   void dispose() {
-    _nombreController.dispose();
-    _contrasenaController.dispose();
-    _correoController.dispose();
-    _telefonoController.dispose();
-    _fechaDeNacimientoController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _phoneController.dispose();
+    _birthDateController.dispose();
     super.dispose();
   }
 
@@ -41,38 +42,61 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(),
-                  const SizedBox(height: 40),
-                  _buildWelcomeText(),
-                  const SizedBox(height: 30),
-                  _buildNameField(),
-                  const SizedBox(height: 20),
-                  _buildPasswordField(),
-                  const SizedBox(height: 20),
-                  _buildEmailField(),
-                  const SizedBox(height: 20),
-                  _buildPhoneField(),
-                  const SizedBox(height: 20),
-                  _buildBirthDateField(),
-                  const SizedBox(height: 20),
-                  CommonWidgets.buildErrorText(
-                    text: _mensajeError,
-                    isVisible: !_isLoading,
-                  ),
-                  if (_isLoading)
-                    const Center(child: CircularProgressIndicator()),
-                ],
-              ),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40),
+                // Título con icono
+                Row(
+                  children: [
+                    Icon(
+                      Icons.person_add,
+                      size: 40,
+                      color: AppTheme.secondaryColor,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      "Crear cuenta",
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.secondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Completa tus datos para registrarte",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+                ),
+                const SizedBox(height: 40),
+                // Campos del formulario
+                _buildNameField(),
+                const SizedBox(height: 20),
+                _buildEmailField(),
+                const SizedBox(height: 20),
+                _buildPasswordField(),
+                const SizedBox(height: 20),
+                _buildPhoneField(),
+                const SizedBox(height: 20),
+                _buildBirthDateField(),
+                const SizedBox(height: 24),
+                if (_errorMessage.isNotEmpty) _buildErrorContainer(),
+                const SizedBox(height: 24),
+                _buildRegisterButton(),
+                const SizedBox(height: 24),
+                _buildLoginInsteadButton(),
+              ],
             ),
           ),
         ),
@@ -80,150 +104,167 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildBottomBar() {
-    return CommonWidgets.buildAuthBottomBar(
-      textButton1: "Registrar",
-      textButton2: "Cancelar",
-      onClick1: _registrar,
-      onClick2: () => Navigator.pop(context),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        Image.asset("assets/icons/icon.png", height: 60),
-        const SizedBox(width: 20),
-        const Text(
-          "Registrar",
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Color(0xfffa6045),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWelcomeText() {
-    return const Text(
-      "Encantado de verte",
-      style: TextStyle(
-        fontSize: 18,
-        color: Colors.black54,
-        fontWeight: FontWeight.w400,
-      ),
-    );
-  }
-
   Widget _buildNameField() {
     return CommonWidgets.buildTextField(
-      controller: _nombreController,
+      controller: _nameController,
+      keyboardType: TextInputType.name,
       label: "Nombre completo",
       icon: Icons.person,
-      keyboardType: TextInputType.name,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor ingrese su nombre';
-        }
-        if (value.length < 3) {
-          return 'El nombre debe tener al menos 3 caracteres';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return PasswordFieldCustom(
-      text: "Contraseña",
-      controller: _contrasenaController,
+      textInputAction: TextInputAction.next,
+      validatorType: ValidatorType.name,
     );
   }
 
   Widget _buildEmailField() {
     return CommonWidgets.buildTextField(
-      controller: _correoController,
-      label: "Correo electrónico",
-      icon: Icons.email,
+      controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor ingrese su correo';
-        }
-        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-          return 'Ingrese un correo válido';
-        }
-        return null;
-      },
+      label: "Correo electrónico",
+      icon: Icons.person,
+      textInputAction: TextInputAction.next,
+      validatorType: ValidatorType.email,
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return CommonWidgets.buildTextField(
+      controller: _passwordController,
+      keyboardType: TextInputType.visiblePassword,
+      label: "Contraseña",
+      icon: Icons.lock,
+      textInputAction: TextInputAction.next,
+      validatorType: ValidatorType.password,
+      isPassword: true,
     );
   }
 
   Widget _buildPhoneField() {
     return CommonWidgets.buildTextField(
-      controller: _telefonoController,
+      controller: _phoneController,
+      keyboardType: TextInputType.phone,
       label: "Teléfono",
       icon: Icons.phone,
-      keyboardType: TextInputType.phone,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor ingrese su teléfono';
-        }
-        if (!RegExp(r'^[0-9]{9,15}$').hasMatch(value)) {
-          return 'Ingrese un teléfono válido';
-        }
-        return null;
-      },
+      textInputAction: TextInputAction.next,
+      validatorType: ValidatorType.phone,
     );
   }
 
   Widget _buildBirthDateField() {
     return DatePickerWidget(
-      controller: _fechaDeNacimientoController,
+      controller: _birthDateController,
       label: "Fecha de nacimiento",
       onDateSelected: (selectedDate) {
         setState(() {
-          _selectedDate = selectedDate;
-          _fechaDeNacimientoController.text =
-              "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+          _birthDate = selectedDate;
+          _birthDateController.text =
+          "${_birthDate!.day}/${_birthDate!.month}/${_birthDate!.year}";
         });
       },
     );
   }
 
-  Future<void> _registrar() async {
-    if (!_formKey.currentState!.validate()) return;
+  Widget _buildErrorContainer() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _errorMessage,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildRegisterButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleRegistration,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xfffa6045),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child:
+            _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+                  "Registrarse",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+      ),
+    );
+  }
+
+  Widget _buildLoginInsteadButton() {
+    return Center(
+      child: TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text(
+          "¿Ya tienes una cuenta? Inicia sesión",
+          style: TextStyle(color: Color(0xfffa6045)),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleRegistration() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_birthDate == null) {
+      setState(
+        () => _errorMessage = 'Por favor selecciona tu fecha de nacimiento',
+      );
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
-      _mensajeError = "";
+      _errorMessage = '';
     });
 
     try {
-      final fechaDeNacimiento = DateFormat(
-        'dd/MM/yyyy',
-      ).parse(_fechaDeNacimientoController.text);
-
       final cliente = ClientePostDTO(
-        nombre: _nombreController.text.trim(),
-        contrasena: _contrasenaController.text,
-        correo: _correoController.text.trim(),
-        telefono: _telefonoController.text.trim(),
-        fechaNacimiento: fechaDeNacimiento,
-        activo: true,
+        usuarioPostDTO: UsuarioPostDTO(
+          nombre: _nameController.text.trim(),
+          correo: _emailController.text.trim(),
+          contrasena: _passwordController.text.trim(),
+          telefono: _phoneController.text.trim(),
+          fechaNacimiento: _birthDate!,
+          tipoUsuario: TipoUsuario.CLIENTE,
+          activo: true,
+        ),
       );
 
-      await _clienteService.crearCliente(cliente);
+      await ref.read(registerClienteProvider(cliente).future);
 
       if (mounted) {
-        _mostrarMensajeExito('Registro exitoso');
-        Navigator.pop(context); // Regresar después de registro exitoso
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registro exitoso'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
       }
     } catch (e) {
-      setState(() {
-        _mensajeError = _getErrorMessage(e);
-      });
+      setState(() => _errorMessage = _getErrorMessage(e));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -232,23 +273,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   String _getErrorMessage(dynamic error) {
-    if (error.toString().contains("socket") ||
-        error.toString().contains("connection")) {
-      return "Error de conexión. Verifique su internet";
+    if (error.toString().contains('socket') ||
+        error.toString().contains('connection')) {
+      return 'Error de conexión. Verifica tu internet';
+    } else if (error.toString().contains('409')) {
+      return 'El correo electrónico ya está registrado';
     }
-    if (error.toString().contains("409")) {
-      return "El correo electrónico ya está registrado";
-    }
-    return "Error al registrar. Intente nuevamente";
-  }
-
-  void _mostrarMensajeExito(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    return 'Error al registrar. Intenta nuevamente';
   }
 }

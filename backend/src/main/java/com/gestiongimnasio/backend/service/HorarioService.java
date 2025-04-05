@@ -1,20 +1,20 @@
 package com.gestiongimnasio.backend.service;
 
-import com.gestiongimnasio.backend.dto.get.ClaseHorarioGetDTO;
-import com.gestiongimnasio.backend.dto.post.ClaseHorarioPostDTO;
-import com.gestiongimnasio.backend.dto.put.ClaseHorarioPutDTO;
+import com.gestiongimnasio.backend.dto.get.HorarioGetDTO;
+import com.gestiongimnasio.backend.dto.post.HorarioPostDTO;
+import com.gestiongimnasio.backend.dto.put.HorarioPutDTO;
 
 import java.time.DayOfWeek;
 import java.util.List;
 
-public interface ClaseHorarioService {
-    List<ClaseHorarioGetDTO> findAll();
-    ClaseHorarioGetDTO findById(Long id);
-    ClaseHorarioGetDTO create(ClaseHorarioPostDTO claseHorarioPostDTO);
-    ClaseHorarioGetDTO update(Long id, ClaseHorarioPutDTO claseHorarioPutDTO);
+public interface HorarioService {
+    List<HorarioGetDTO> findAll();
+    HorarioGetDTO findById(Long id);
+    HorarioGetDTO create(HorarioPostDTO horarioPostDTO);
+    HorarioGetDTO update(Long id, HorarioPutDTO horarioPutDTO);
     void delete(Long id)  ;
-    List<ClaseHorarioGetDTO> findByClase(Long claseId);
-    List<ClaseHorarioGetDTO> findBySala(Long salaId);
-    List<ClaseHorarioGetDTO> findByInstructor(Long instructorId);
-    List<ClaseHorarioGetDTO> findByDia(DayOfWeek dia);
+    List<HorarioGetDTO> findByClase(Long claseId);
+    List<HorarioGetDTO> findBySala(Long salaId);
+    List<HorarioGetDTO> findByInstructor(Long instructorId);
+    List<HorarioGetDTO> findByDia(DayOfWeek dia);
 }

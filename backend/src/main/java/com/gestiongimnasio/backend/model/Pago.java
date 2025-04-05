@@ -3,48 +3,39 @@ package com.gestiongimnasio.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "pagos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"cliente"})
 public class Pago {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "pago", cascade = CascadeType.ALL)
-    private List<Inscripcion> inscripciones = new ArrayList<>();
-
-    @NotNull @Positive
+    @NotNull
+    @Positive
     private Double monto;
 
+    @NotNull
     private LocalDate fechaPago;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private EstadoPago estadoPago = EstadoPago.PENDIENTE;
+    private boolean pagado = false;
 
-    @Size(max = 500)
-    private String comentario;
-
-    public enum EstadoPago {
-        PENDIENTE, COMPLETADO, CANCELADO
-    }
 
     @PrePersist
-    @PreUpdate
-    private void validar() {
-        if (estadoPago == EstadoPago.COMPLETADO && fechaPago == null) {
+    private void initFechaPago() {
+        if (fechaPago == null) {
             fechaPago = LocalDate.now();
         }
     }

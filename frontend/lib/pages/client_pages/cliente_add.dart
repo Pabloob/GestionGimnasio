@@ -1,332 +1,204 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/api_clase.dart';
-import 'package:frontend/apis/api_cliente.dart';
-import 'package:frontend/apis/api_inscripcion.dart';
-import 'package:frontend/apis/api_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/services/clase_service.dart';
-import 'package:frontend/services/inscripcion_service.dart';
-import 'package:frontend/utils/common_widgets.dart';
-import 'package:frontend/utils/utils.dart';
-import 'package:intl/intl.dart';
+import 'package:frontend/models/post/InscripcionPostDTO.dart';
+import 'package:frontend/models/post/PagoPostDTO.dart';
+import 'package:frontend/pages/components/add_clase_card.dart';
+import 'package:frontend/providers/cliente_providers.dart';
+import 'package:frontend/providers/common_providers.dart';
+import 'package:frontend/providers/inscripcion_provider.dart';
+import 'package:frontend/providers/pago_provider.dart';
 
-class ClienteAddPage extends StatefulWidget {
+import '../components/common_widgets.dart';
+
+class ClientAddClassPage extends ConsumerWidget {
   final VoidCallback? onEnrollmentSuccess;
-  const ClienteAddPage({super.key, this.onEnrollmentSuccess});
+
+  const ClientAddClassPage({super.key, this.onEnrollmentSuccess});
 
   @override
-  State<ClienteAddPage> createState() => _ClienteAddPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final availableClassesAsync = ref.watch(clienteAvaibleClasesProvider);
+    final selectedClasses = ref.watch(clienteSelectedClasesProvider);
 
-class _ClienteAddPageState extends State<ClienteAddPage> {
-  dynamic _user;
-  final List<ClaseGetDTO> _selectedClasses = [];
-  late final ClaseService _classService;
-  late final InscripcionService _enrollmentService;
-  late Future<List<ClaseGetDTO>> _classesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeServices();
-    _classesFuture = _loadUserAndClasses();
-  }
-
-  void _initializeServices() {
-    _classService = ClaseService(
-      claseService: ApiClase(apiService: ApiService()),
-      clienteService: ApiCliente(apiService: ApiService()),
-    );
-    _enrollmentService = InscripcionService(
-      inscripcionService: ApiInscripcion(apiService: ApiService()),
-    );
-  }
-
-  Future<List<ClaseGetDTO>> _loadUserAndClasses() async {
-    _user = await obtenerUsuarioGuardado();
-    if (mounted) setState(() {});
-    return _classService.obtenerClasesDisponibles();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          CommonWidgets.buildCustomTopMesage(
-            user: _user,
-            textoPrincipal: "Bienvenido",
-            textoSecundario: "Hoy es un gran día para entrenar",
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
+    return userAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(child: Text("Error: $error")),
+      data:
+          (user) => SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Clases disponibles",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                CommonWidgets.buildCustomTopMesage(
+                  user: user.usuario,
+                  textoPrincipal: "Clases disponibles",
+                  textoSecundario: "Inscríbete a nuevas clases",
+                ),
+                if (selectedClasses.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: () => _showEnrollDialog(context, ref),
+                        child: const Text("Confirmar inscripción"),
+                      ),
+                    ),
                   ),
-                ),
-                SizedBox(height: 10),
-
-                SizedBox(
-                  height: 20,
-                  child:
-                      _selectedClasses.isNotEmpty
-                          ? ElevatedButton(
-                            onPressed: _showConfirmationDialog,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(
-                                0xFF34C759,
-                              ), // Verde vibrante
-                              shadowColor: Colors.transparent,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text("Confirmar"),
-                          )
-                          : SizedBox(),
-                ),
-                SizedBox(height: 10),
-                FutureBuilder<List<ClaseGetDTO>>(
-                  future: _classesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No hay clases disponibles.'));
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        final clase = snapshot.data![index];
-                        return _buildClassCard(clase);
-                      },
-                    );
-                  },
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: availableClassesAsync.when(
+                    loading:
+                        () => const Center(child: CircularProgressIndicator()),
+                    error: (error, _) => Center(child: Text('Error: $error')),
+                    data:
+                        (classes) =>
+                            classes.isEmpty
+                                ? const Center(
+                                  child: Text('No hay clases disponibles.'),
+                                )
+                                : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: classes.length,
+                                  itemBuilder:
+                                      (context, index) => AddClaseCard(
+                                        clase: classes[index],
+                                        isSelected: selectedClasses.contains(
+                                          classes[index],
+                                        ),
+                                        onToggle:
+                                            () => _toggleClassSelection(
+                                              ref,
+                                              classes[index],
+                                            ),
+                                      ),
+                                ),
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
     );
   }
 
-  void _toggleClassSelection(ClaseGetDTO clase) {
-    setState(() {
-      _selectedClasses.contains(clase)
-          ? _selectedClasses.remove(clase)
-          : _selectedClasses.add(clase);
+  void _toggleClassSelection(WidgetRef ref, ClaseGetDTO clase) {
+    ref.read(clienteSelectedClasesProvider.notifier).update((state) {
+      return state.contains(clase)
+          ? state.where((c) => c != clase).toList()
+          : [...state, clase];
     });
   }
 
-  Future<void> _handleEnrollment() async {
-    Navigator.of(context).pop();
+  void _showEnrollDialog(BuildContext context, WidgetRef ref) {
+    final selectedClasses = ref.read(clienteSelectedClasesProvider);
 
-    final success = await _enrollmentService.inscribir(_selectedClasses);
-    if (!mounted) return;
-
-    if (success) {
-      // Llamamos al callback si existe
-      widget.onEnrollmentSuccess?.call();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Inscripción completada con éxito'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      setState(() {
-        _selectedClasses.clear();
-        _classesFuture = _classService.obtenerClasesDisponibles();
-      });
-    }
-  }
-
-  void _showConfirmationDialog() {
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Text(
-              "Confirmar Inscripción",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0057FF),
-              ),
-            ),
+            title: const Text("Confirmar Inscripción"),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Las siguientes clases serán reservadas para ti:",
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
+                  const Text("Las siguientes clases serán reservadas:"),
+                  const SizedBox(height: 16),
+                  ...selectedClasses.map(
+                    (clase) => ListTile(
+                      title: Text(clase.nombre),
+                      trailing: Text("${clase.precio} €"),
+                    ),
                   ),
-                  SizedBox(height: 10),
-                  Table(
-                    children: [
-                      ..._selectedClasses.map(
-                        (clase) => TableRow(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                clase.nombre!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                "${clase.precio.toString()} €",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF0057FF),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      TableRow(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              "Total",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              "${_selectedClasses.fold(0.0, (sum, clase) => sum + clase.precio!)} €",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0057FF),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    "¿Quieres confirmar tu inscripción?",
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                  const Divider(),
+                  ListTile(
+                    title: const Text(
+                      "Total",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    trailing: Text(
+                      "${selectedClasses.fold(0.0, (sum, c) => sum + (c.precio))} €",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
             ),
             actions: [
               TextButton(
-                onPressed: _handleEnrollment,
-                style: TextButton.styleFrom(
-                  backgroundColor: Color(0xFF0057FF),
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  "Confirmar",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancelar"),
               ),
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  "Cerrar",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
+                onPressed: () async {
+                  await _handleEnrollment(context, ref);
+                },
+                child: const Text("Confirmar"),
               ),
             ],
           ),
     );
   }
 
-  Widget _buildClassCard(ClaseGetDTO clase) {
-    return Card(
-      elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: Color(0xFFFF9500), // Naranja vibrante
-          child: Icon(Icons.fitness_center, color: Colors.white),
-        ),
-        title: Text(
-          clase.nombre!,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Días: ${clase.getDias()!}"),
-            Text(
-              "Horario: ${DateFormat("HH:mm").format(clase.horaInicio!)} - ${DateFormat("HH:mm").format(clase.horaFin!)}",
+  Future<void> _handleEnrollment(BuildContext context, WidgetRef ref) async {
+    final selectedClasses = ref.read(clienteSelectedClasesProvider);
+
+    final userId = (await ref.read(userProvider.future)).usuario.id;
+
+    try {
+      double totalPrice = 0.0;
+      for (final clase in selectedClasses) {
+        totalPrice += clase.precio;
+      }
+
+      for (final clase in selectedClasses) {
+        await ref.read(
+          registerInscripcionProvider(
+            InscripcionPostDTO(
+              clienteId: userId,
+              claseId: clase.id,
+              asistio: false,
             ),
-            Text("Precio: ${clase.precio}€"),
-          ],
-        ),
-        trailing: ElevatedButton(
-          onPressed: () {
-            _toggleClassSelection(clase);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor:
-                _selectedClasses.contains(clase)
-                    ? Colors.redAccent
-                    : Color(0xFF007AFF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+          ).future,
+        );
+      }
+
+      await ref.read(
+        registerPagoProvider(
+          PagoPostDTO(clienteId: userId, monto: totalPrice, pagado: false),
+        ).future,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inscripción completada con éxito'),
+            backgroundColor: Colors.green,
           ),
-          child: Icon(
-            _selectedClasses.contains(clase)
-                ? Icons.highlight_remove
-                : Icons.add_circle_outline,
-            color: Colors.white,
+        );
+
+        // Resetear selección y recargar clases
+        ref.read(clienteSelectedClasesProvider.notifier).state = [];
+        ref.invalidate(clienteAvaibleClasesProvider);
+        ref.invalidate(clienteClasesProvider);
+
+        onEnrollmentSuccess?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Horario añadido con éxito'),
+            backgroundColor: Colors.green,
           ),
-        ),
-      ),
-    );
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al inscribirse: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

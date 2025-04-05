@@ -1,37 +1,29 @@
+import 'package:frontend/models/get/ClaseGetDTO.dart';
+import 'package:frontend/models/get/ClienteGetDTO.dart';
+
 class InscripcionGetDTO {
-  final int? id;
-  final int? clienteId;
-  final String? clienteNombre;
-  final int? claseId;
-  final String? claseNombre;
-  final int? pagoId;
-  final DateTime? fechaRegistro;
-  final bool? estadoPago;
+  final int id;
+  final ClienteGetDTO cliente;
+  final ClaseGetDTO clase;
+  final DateTime fechaRegistro;
+  final bool asistio;
 
   InscripcionGetDTO({
-    this.id,
-    this.clienteId,
-    this.clienteNombre,
-    this.claseId,
-    this.claseNombre,
-    this.pagoId,
-    this.fechaRegistro,
-    this.estadoPago,
+    required this.id,
+    required this.cliente,
+    required this.clase,
+    required this.fechaRegistro,
+    required this.asistio,
   });
 
   // Factory para crear una instancia desde JSON
   factory InscripcionGetDTO.fromJson(Map<String, dynamic> json) {
     return InscripcionGetDTO(
       id: json['id'],
-      clienteId: json['clienteId'],
-      clienteNombre: json['clienteNombre'],
-      claseId: json['claseId'],
-      claseNombre: json['claseNombre'],
-      pagoId: json['pagoId'],
-      fechaRegistro: json['fechaRegistro'] != null
-          ? DateTime.parse(json['fechaRegistro'])
-          : null,
-      estadoPago: json['estadoPago'],
+      cliente: ClienteGetDTO.fromJson(json['cliente']),
+      clase: ClaseGetDTO.fromJson(json['clase']),
+      fechaRegistro: DateTime.parse(json['fechaRegistro']),
+      asistio: json['asistio'],
     );
   }
 
@@ -39,13 +31,10 @@ class InscripcionGetDTO {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'clienteId': clienteId,
-      'clienteNombre': clienteNombre,
-      'claseId': claseId,
-      'claseNombre': claseNombre,
-      'pagoId': pagoId,
-      'fechaRegistro': fechaRegistro?.toIso8601String(),
-      'estadoPago': estadoPago,
+      'cliente': cliente.toJson(),
+      'clase': clase.toJson(),
+      'fechaRegistro': fechaRegistro.toIso8601String(),
+      'asistio': asistio,
     };
   }
 }

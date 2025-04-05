@@ -4,7 +4,6 @@ import com.gestiongimnasio.backend.dto.UsuarioLoginDTO;
 import com.gestiongimnasio.backend.dto.get.ClienteGetDTO;
 import com.gestiongimnasio.backend.dto.get.TrabajadorGetDTO;
 import com.gestiongimnasio.backend.dto.get.UsuarioGetDTO;
-import com.gestiongimnasio.backend.dto.put.UsuarioPutDTO;
 import com.gestiongimnasio.backend.security.JwtTokenProvider;
 import com.gestiongimnasio.backend.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -22,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -34,6 +33,7 @@ public class UsuarioController {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid UsuarioLoginDTO loginRequest) {
@@ -63,19 +63,21 @@ public class UsuarioController {
                 response.put("role", "CLIENTE");
                 response.put("userDetails", usuario);
             } else if (usuario instanceof TrabajadorGetDTO trabajador) {
-                response.put("role", trabajador.getTipoTrabajador().name());
+                response.put("role", trabajador.getTipoTrabajador());
                 response.put("userDetails", usuario);
             }
             System.out.println("BIEN");
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "error", "Unauthorized",
                             "message", "Correo o contraseña incorrectos"
                     ));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "error", "Internal Server Error",
@@ -84,46 +86,29 @@ public class UsuarioController {
         }
     }
 
-    @GetMapping
-    public ResponseEntity<List<UsuarioGetDTO>> getAll() {
-        List<UsuarioGetDTO> usuarios = usuarioService.getAll();
-        return ResponseEntity.ok(usuarios);
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<UsuarioGetDTO> getById(@PathVariable Long id) {
-        UsuarioGetDTO usuario = usuarioService.getById(id);
-        return ResponseEntity.ok(usuario);
+    public ResponseEntity<UsuarioGetDTO> getUsuarioById(@PathVariable Long id) {
+        return ResponseEntity.ok(usuarioService.findById(id));
     }
-
 
     @GetMapping("/correo/{correo}")
-    public ResponseEntity<UsuarioGetDTO> getByCorreo(@PathVariable String correo) {
-        UsuarioGetDTO usuario = usuarioService.getByCorreo(correo);
+    public ResponseEntity<UsuarioGetDTO> getUsuarioByCorreo(@PathVariable String correo) {
+        return ResponseEntity.ok(usuarioService.getByCorreo(correo));
+    }
 
-        return ResponseEntity.ok(usuario);
+    @GetMapping
+    public ResponseEntity<List<UsuarioGetDTO>> getAllUsuarios() {
+        return ResponseEntity.ok(usuarioService.getAll());
     }
 
     @GetMapping("/existe/{correo}")
-    public ResponseEntity<Boolean> existsByCorreo(@PathVariable String correo) {
-        boolean existe = usuarioService.existsByCorreo(correo);
-
-        return ResponseEntity.ok(existe);
+    public ResponseEntity<Boolean> checkCorreoExiste(@PathVariable String correo) {
+        return ResponseEntity.ok(usuarioService.existsByCorreo(correo));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UsuarioGetDTO> update(
-            @PathVariable Long id,
-            @RequestBody UsuarioPutDTO clienteDTO) {
-
-        UsuarioGetDTO updatedUsuario = usuarioService.update(id, clienteDTO);
-        return ResponseEntity.ok(updatedUsuario);
-    }
-
-    @PutMapping("/desactivar/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        usuarioService.deactivate(id);
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<Void> toggleUsuarioStatus(@PathVariable Long id) {
+        usuarioService.toggleUsuarioStatus(id);
         return ResponseEntity.noContent().build();
     }
-
 }

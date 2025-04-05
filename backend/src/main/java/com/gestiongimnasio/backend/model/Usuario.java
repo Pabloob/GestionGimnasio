@@ -48,7 +48,6 @@ public abstract class Usuario {
     @Enumerated(EnumType.STRING)
     private TipoUsuario tipoUsuario;
 
-    @Column(nullable = false)
     private boolean activo = true;
 
     public enum TipoUsuario {
@@ -59,7 +58,6 @@ public abstract class Usuario {
     @PreUpdate
     protected final void validarUsuario() {
         validarTipoUsuario();
-        validacionesComunes();
         validacionesEspecificas();
     }
 
@@ -67,9 +65,6 @@ public abstract class Usuario {
         if (tipoUsuario == null) {
             throw new IllegalStateException("El tipo de usuario no puede ser nulo");
         }
-    }
-
-    private void validacionesComunes() {
     }
 
     protected abstract void validacionesEspecificas();

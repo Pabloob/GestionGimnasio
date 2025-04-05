@@ -1,44 +1,28 @@
-import 'package:frontend/models/enums.dart';
+import 'package:frontend/models/get/ClienteGetDTO.dart';
 
 class PagoGetDTO {
-  final int? id;
-  final int? clienteId;
-  final String? clienteNombre;
-  final List<int>? inscripcionesIds;
-  final double? monto;
-  final DateTime? fechaPago;
-  final EstadoPago? estadoPago;
-  final String? comentario;
+  final int id;
+  final ClienteGetDTO cliente;
+  final double monto;
+  final DateTime fechaPago;
+  final bool pagado;
 
   PagoGetDTO({
-    this.id,
-    this.clienteId,
-    this.clienteNombre,
-    this.inscripcionesIds,
-    this.monto,
-    this.fechaPago,
-    this.estadoPago,
-    this.comentario,
+    required this.id,
+    required this.cliente,
+    required this.monto,
+    required this.fechaPago,
+    required this.pagado,
   });
 
   // Factory para crear una instancia desde JSON
   factory PagoGetDTO.fromJson(Map<String, dynamic> json) {
     return PagoGetDTO(
       id: json['id'],
-      clienteId: json['clienteId'],
-      clienteNombre: json['clienteNombre'],
-      inscripcionesIds:
-          json['inscripcionesIds'] != null
-              ? List<int>.from(json['inscripcionesIds'])
-              : null,
+      cliente: ClienteGetDTO.fromJson(json['cliente']),
       monto: json['monto']?.toDouble(),
-      fechaPago:
-          json['fechaPago'] != null ? DateTime.parse(json['fechaPago']) : null,
-      estadoPago: EstadoPago.values.firstWhere(
-        (e) => e.toString() == 'EstadoPago.${json['estadoPago']}',
-        orElse: () => EstadoPago.PENDIENTE,
-      ),
-      comentario: json['comentario'],
+      fechaPago: DateTime.parse(json['fechaPago']),
+      pagado: json['pagado'],
     );
   }
 
@@ -46,13 +30,10 @@ class PagoGetDTO {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'clienteId': clienteId,
-      'clienteNombre': clienteNombre,
-      'inscripcionesIds': inscripcionesIds,
+      'cliente': cliente.toJson(),
       'monto': monto,
-      'fechaPago': fechaPago?.toIso8601String(),
-      'estadoPago': estadoPago.toString().split('.').last,
-      'comentario': comentario,
+      'fechaPago': fechaPago.toIso8601String(),
+      'pagado': pagado,
     };
   }
 }

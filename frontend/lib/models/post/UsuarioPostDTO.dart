@@ -5,7 +5,7 @@ class UsuarioPostDTO {
   final String contrasena;
   final String correo;
   final String telefono;
-  final DateTime fechaDeNacimiento;
+  final DateTime fechaNacimiento;
   final TipoUsuario tipoUsuario;
   final bool activo;
 
@@ -14,7 +14,7 @@ class UsuarioPostDTO {
     required this.contrasena,
     required this.correo,
     required this.telefono,
-    required this.fechaDeNacimiento,
+    required this.fechaNacimiento,
     required this.tipoUsuario,
     required this.activo,
   });
@@ -26,7 +26,7 @@ class UsuarioPostDTO {
       contrasena: json['contrasena'],
       correo: json['correo'],
       telefono: json['telefono'],
-      fechaDeNacimiento: DateTime.parse(json['fechaNacimiento']),
+      fechaNacimiento: DateTime.parse(json['fechaNacimiento']),
       tipoUsuario: TipoUsuario.values.firstWhere(
         (e) => e.name == json["tipoUsuario"],
       ),
@@ -41,7 +41,7 @@ class UsuarioPostDTO {
       'contrasena': contrasena,
       'correo': correo,
       'telefono': telefono,
-      'fechaDeNacimiento': fechaDeNacimiento.toIso8601String(),
+      'fechaNacimiento': fechaNacimiento.toIso8601String(),
       'tipoUsuario': tipoUsuario.name,
       'activo': activo,
     };

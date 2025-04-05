@@ -1,91 +1,109 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/api_usuario.dart';
-import 'package:frontend/models/Login.dart';
-import 'package:frontend/models/get/ClienteGetDTO.dart';
-import 'package:frontend/models/get/TrabajadorGetDTO.dart';
-import 'package:frontend/pages/client_pages/client_main.dart';
-import 'package:frontend/pages/instructor_pages/instructor_home_page.dart';
-import 'package:frontend/utils/campo_contrasena.dart';
-import 'package:frontend/utils/common_widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/pages/components/common_widgets.dart';
+import 'package:frontend/providers/usuario_provider.dart';
+import 'package:frontend/theme/app_theme.dart';
+import 'package:frontend/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../apis/api_service.dart';
 
-class LoginPage extends StatefulWidget {
+import '../../models/Login.dart';
+
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _correoController = TextEditingController();
-  final TextEditingController _contrasenaController = TextEditingController();
-  final ApiUsuario _apiUsuario = ApiUsuario(apiService: ApiService());
-
-  String _mensajeError = "";
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _rememberMe = false;
   bool _isLoading = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarCredencialesGuardadas();
+  }
 
   @override
   void dispose() {
-    _correoController.dispose();
-    _contrasenaController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _cargarCredencialesGuardadas() async {
+    final prefs = await SharedPreferences.getInstance();
+    final correoGuardado = prefs.getString('correo_guardado');
+
+    if (correoGuardado != null && correoGuardado.isNotEmpty) {
+      setState(() {
+        _emailController.text = correoGuardado;
+        _rememberMe = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: _buildBottomBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 60),
-                _buildWelcomeText(),
-                const SizedBox(height: 30),
-
-                CommonWidgets.buildTextField(
-                  controller: _correoController,
-                  label: "Correo electrónico",
-                  icon: Icons.email,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su correo';
-                    }
-                    if (!RegExp(
-                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                    ).hasMatch(value)) {
-                      return 'Ingrese un correo válido';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 20),
-
-                PasswordFieldCustom(
-                  text: "Contraseña",
-                  controller: _contrasenaController,
-                ),
-
-                const SizedBox(height: 20),
-                CommonWidgets.buildErrorText(
-                  text: _mensajeError,
-                  isVisible: !_isLoading,
-                ),
-                if (_isLoading)
-                  const Center(child: CircularProgressIndicator()),
-              ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  // Título con icono
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.fitness_center,
+                        size: 40,
+                        color: AppTheme.secondaryColor,
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        "Iniciar sesión",
+                        style: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.secondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Bienvenido de nuevo",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 40),
+                  // Campos de formulario
+                  _buildEmailField(),
+                  const SizedBox(height: 20),
+                  _buildPasswordField(),
+                  const SizedBox(height: 16),
+                  _buildRememberMeRow(),
+                  const SizedBox(height: 24),
+                  if (_errorMessage.isNotEmpty) _buildErrorContainer(),
+                  const SizedBox(height: 24),
+                  _buildLoginButton(),
+                ],
+              ),
             ),
           ),
         ),
@@ -93,28 +111,65 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildBottomBar() {
-    return CommonWidgets.buildAuthBottomBar(
-      textButton1: "Iniciar sesión",
-      textButton2: "Cancelar",
-      onClick1: _autenticar,
-      onClick2: () => Navigator.pop(context),
+  Widget _buildEmailField() {
+    return CommonWidgets.buildTextField(
+      controller: _emailController,
+      keyboardType: TextInputType.emailAddress,
+      label: "Correo electrónico",
+      icon: Icons.person,
+      textInputAction: TextInputAction.next,
+      validatorType: ValidatorType.email,
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 50),
+  Widget _buildPasswordField() {
+    return CommonWidgets.buildTextField(
+      controller: _passwordController,
+      label: "Contraseña",
+      icon: Icons.lock,
+      isPassword: true,
+      textInputAction: TextInputAction.done,
+      validatorType: ValidatorType.password,
+      onFieldSubmitted: (_) => _handleLogin(),
+    );
+  }
+
+  Widget _buildRememberMeRow() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _rememberMe,
+          onChanged: (value) => setState(() => _rememberMe = value ?? false),
+          activeColor: const Color(0xfffa6045),
+        ),
+        const Text("Recordar mis datos"),
+        const Spacer(),
+        TextButton(
+          onPressed: _showForgotPasswordDialog,
+          child: const Text(
+            "¿Olvidaste tu contraseña?",
+            style: TextStyle(color: Color(0xfffa6045)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorContainer() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         children: [
-          Image.asset("assets/icons/icon.png", height: 60),
-          const SizedBox(width: 20),
-          const Text(
-            "Iniciar sesión",
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Color(0xfffa6045),
+          const Icon(Icons.error_outline, color: Colors.red),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _errorMessage,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -122,46 +177,64 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildWelcomeText() {
-    return const Text(
-      "Encantado de verte de nuevo",
-      style: TextStyle(
-        fontSize: 18,
-        color: Colors.black54,
-        fontWeight: FontWeight.w400,
+  Widget _buildLoginButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleLogin,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xfffa6045),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child:
+            _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+                  "Iniciar sesión",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
       ),
     );
   }
 
-  Future<void> _autenticar() async {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
+    FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
-      _mensajeError = "";
+      _errorMessage = '';
     });
 
     try {
-      final loginData = UsuarioLoginDTO(
-        correo: _correoController.text.trim(),
-        contrasena: _contrasenaController.text,
+      final response = await ref.read(
+        loginProvider(
+          UsuarioLoginDTO(
+            correo: _emailController.text.trim(),
+            contrasena: _passwordController.text.trim(),
+          ),
+        ).future,
       );
 
-      final respuesta = await _apiUsuario.login(loginData);
-      final token = respuesta['token'];
-      final usuario = _extraerUsuario(respuesta);
-
-      if (usuario == null) {
-        throw Exception("Error al obtener datos del usuario");
+      if (_rememberMe) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('correo_guardado', _emailController.text.trim());
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('correo_guardado');
       }
 
-      await _guardarDatosSesion(token, usuario);
-
-      final role = respuesta['role']; 
-      await _navegarSegunRol(usuario, role);
+      await _processLoginResponse(response);
     } catch (e) {
       setState(() {
-        _mensajeError = _getErrorMessage(e);
+        _errorMessage = _getErrorMessage(e);
       });
     } finally {
       if (mounted) {
@@ -170,69 +243,56 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _processLoginResponse(Map<String, dynamic> response) async {
+    final token = response['token'];
+    final role = response['role'];
+    AuthService authService = AuthService();
+    final user = authService.extraerUsuario(response, role);
+
+    if (user == null) throw Exception('Error al obtener datos del usuario');
+
+    // Guardar sesión y navegar
+    await authService.saveSession(token, user);
+    if (mounted) await authService.navegarSegunRol(role, context);
+  }
+
   String _getErrorMessage(dynamic error) {
-    if (error.toString().contains("socket") ||
-        error.toString().contains("connection")) {
-      return "Error de conexión. Verifique su internet";
+    if (error.toString().contains('socket') ||
+        error.toString().contains('connection')) {
+      return 'Error de conexión. Verifica tu internet';
+    } else if (error.toString().contains('401')) {
+      return 'Correo o contraseña incorrectos';
     }
-    return "Credenciales incorrectas o servicio no disponible";
+    return 'Error al iniciar sesión. Intenta nuevamente';
   }
 
-  Future<void> _guardarDatosSesion(String token, dynamic usuario) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-
-    Map<String, dynamic> usuarioMap;
-    if (usuario is ClienteGetDTO) {
-      usuarioMap = usuario.toJson();
-      usuarioMap['tipoUsuario'] = 'CLIENTE';
-    } else if (usuario is TrabajadorGetDTO) {
-      usuarioMap = usuario.toJson();
-      usuarioMap['tipoUsuario'] = 'TRABAJADOR';
-    } else {
-      throw Exception("Tipo de usuario no reconocido");
-    }
-
-    final usuarioJson = jsonEncode(usuarioMap);
-
-    await prefs.setString('usuario', usuarioJson);
-  }
-
-  dynamic _extraerUsuario(Map<String, dynamic> respuesta) {
-    if (respuesta.containsKey('userDetails')) {
-      final userDetails = respuesta['userDetails'];
-      final role = respuesta['role'];
-
-      if (role == 'CLIENTE') {
-        return ClienteGetDTO.fromJson(userDetails);
-      } else if (role == 'ENTRENADOR' || role == 'RECEPCIONISTA') {
-        return TrabajadorGetDTO.fromJson(userDetails);
-      }
-    }
-    return null;
-  }
-
-  Future<void> _navegarSegunRol(dynamic usuario, String role) async {
-    Widget paginaDestino;
-
-    switch (role) {
-      case "CLIENTE":
-        paginaDestino = const ClientMainScreen();
-        break;
-      case "ENTRENADOR":
-      case "RECEPCIONISTA":
-        paginaDestino = const InstructorHomePage();
-        break;
-      default:
-        throw Exception("Rol de usuario no reconocido");
-    }
-
-    if (!mounted) return;
-
-    await Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => paginaDestino),
-      (Route<dynamic> route) => false,
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Recuperar contraseña"),
+            content: const Text(
+              "Ingresa tu correo para restablecer tu contraseña",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Instrucciones enviadas a tu correo"),
+                    ),
+                  );
+                },
+                child: const Text("Enviar"),
+              ),
+            ],
+          ),
     );
   }
 }

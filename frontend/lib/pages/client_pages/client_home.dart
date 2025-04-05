@@ -1,136 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/api_clase.dart';
-import 'package:frontend/apis/api_cliente.dart';
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/services/clase_service.dart';
-import 'package:frontend/utils/common_widgets.dart';
-import 'package:frontend/utils/utils.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/pages/components/clase_card.dart';
+import 'package:frontend/providers/cliente_providers.dart';
 
-class ClientHomePage extends StatefulWidget {
+import '../../providers/common_providers.dart';
+import '../components/common_widgets.dart';
+
+class ClientHomePage extends ConsumerWidget {
   const ClientHomePage({super.key});
 
   @override
-  State<ClientHomePage> createState() => _ClientHomePageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider);
+    final classesAsync = ref.watch(clienteClasesProvider);
 
-class _ClientHomePageState extends State<ClientHomePage> {
-  dynamic _user;
-  late final ClaseService _classService;
-  late Future<List<ClaseGetDTO>> _classesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeServices();
-    _classesFuture = _loadUserAndClasses();
-  }
-
-  void _initializeServices() {
-    _classService = ClaseService(
-      claseService: ApiClase(apiService: ApiService()),
-      clienteService: ApiCliente(apiService: ApiService()),
-    );
-  }
-
-  Future<List<ClaseGetDTO>> _loadUserAndClasses() async {
-    _user = await obtenerUsuarioGuardado();
-    if (mounted) setState(() {});
-    return _classService.obtenerClases();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          CommonWidgets.buildCustomTopMesage(
-            user: _user,
-            textoPrincipal: "Bienvenido",
-            textoSecundario: "¿Listo para entrenar?",
-          ),
-
-          // Sección de clases
-          Padding(
-            padding: const EdgeInsets.all(16),
+    return userAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(child: Text("Error: $error")),
+      data:
+          (user) => SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Clases disponibles",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                CommonWidgets.buildCustomTopMesage(
+                  user: user.usuario,
+                  textoPrincipal: "Bienvenido",
+                  textoSecundario: "¿Listo para entrenar?",
                 ),
-                SizedBox(height: 10),
-                FutureBuilder<List<ClaseGetDTO>>(
-                  future: _classesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No hay clases disponibles.'));
-                    }
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        final clase = snapshot.data![index];
-                        return _buildClassCard(clase);
-                      },
-                    );
-                  },
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Tus clases",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      classesAsync.when(
+                        loading:
+                            () => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        error:
+                            (error, _) => Center(child: Text('Error: $error')),
+                        data:
+                            (classes) =>
+                                classes.isEmpty
+                                    ? const Center(
+                                      child: Text(
+                                        'No estás inscrito en ninguna clase.',
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemCount: classes.length,
+                                      itemBuilder:
+                                          (context, index) => ClassCard(
+                                            clase: classes[index].clase,
+                                            isEnrolled: true,
+                                            ref: ref,
+                                          ),
+                                    ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClassCard(ClaseGetDTO clase) {
-    return Card(
-      elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: Color(0xFFB7C4B5),
-          child: Icon(Icons.fitness_center, color: Colors.white),
-        ),
-        title: Text(
-          clase.nombre!,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Días: ${clase.getDias()!}"),
-            Text(
-              "Horario: ${DateFormat("HH:mm").format(clase.horaInicio!)} - ${DateFormat("HH:mm").format(clase.horaFin!)}",
-            ),
-            Text("Sala: ${clase.sala}"),
-          ],
-        ),
-        trailing: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF7D8C88), // Color principal
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Icon(Icons.notifications, color: Colors.white),
-        ),
-      ),
     );
   }
 }

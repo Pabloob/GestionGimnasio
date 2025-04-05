@@ -21,51 +21,59 @@ public class ClaseController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ClaseGetDTO>> getAll() {
-        List<ClaseGetDTO> clases = claseService.getAll();
+    public ResponseEntity<List<ClaseGetDTO>> getAllClases() {
+        List<ClaseGetDTO> clases = claseService.findAllClases();
         return ResponseEntity.ok(clases);
+    }
+
+    @GetMapping("/activas")
+    public ResponseEntity<List<ClaseGetDTO>> getClasesActivas() {
+        List<ClaseGetDTO> clasesActivas = claseService.findClasesActivas();
+        return ResponseEntity.ok(clasesActivas);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClaseGetDTO> getById(@PathVariable Long id) {
-        ClaseGetDTO clase = claseService.getById(id);
+    public ResponseEntity<ClaseGetDTO> getClaseById(@PathVariable Long id) {
+        ClaseGetDTO clase = claseService.findClaseById(id);
         return ResponseEntity.ok(clase);
     }
 
-    @GetMapping("/instructor/{id}")
-    public ResponseEntity<List<ClaseGetDTO>> getClasesByInstructor(@PathVariable Long id) {
-        List<ClaseGetDTO> clases = claseService.getClasesByInstructor(id);
-        return ResponseEntity.ok(clases);
+    @GetMapping("/{id}/cupos-disponibles")
+    public ResponseEntity<Integer> getCuposDisponibles(@PathVariable Long id) {
+        int cupos = claseService.cuposDisponibles(id);
+        return ResponseEntity.ok(cupos);
+    }
+
+    @GetMapping("/{id}/tiene-cupos")
+    public ResponseEntity<Boolean> tieneCuposDisponibles(@PathVariable Long id) {
+        boolean tieneCupos = claseService.tieneCuposDisponibles(id);
+        return ResponseEntity.ok(tieneCupos);
     }
 
     @PostMapping
-    public ResponseEntity<ClaseGetDTO> save(@RequestBody ClasePostDTO claseDTO) {
-        ClaseGetDTO nuevaClase = claseService.save(claseDTO);
-        return new ResponseEntity<>(nuevaClase, HttpStatus.CREATED);
+    public ResponseEntity<ClaseGetDTO> createClase(@RequestBody ClasePostDTO clasePostDTO) {
+        ClaseGetDTO nuevaClase = claseService.saveClase(clasePostDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaClase);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClaseGetDTO> update(@PathVariable Long id, @RequestBody ClasePutDTO claseDTO) {
-        ClaseGetDTO updatedClase = claseService.update(id, claseDTO);
-        return ResponseEntity.ok(updatedClase);
-    }
-
-    @PutMapping("/confirmar/{id}")
-    public ResponseEntity<Void> confirmarAsistencias(@PathVariable Long id) {
-        claseService.confirmarAsistencias(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PutMapping("/desactivar/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        claseService.deactivate(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ClaseGetDTO> updateClase(@PathVariable Long id,
+                                                   @RequestBody ClasePutDTO clasePutDTO) {
+        ClaseGetDTO claseActualizada = claseService.updateClase(id, clasePutDTO);
+        return ResponseEntity.ok(claseActualizada);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        claseService.delete(id);
+    public ResponseEntity<Void> deleteClase(@PathVariable Long id) {
+        claseService.deleteClase(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<Void> toggleClaseStatus(@PathVariable Long id) {
+        claseService.toggleClaseStatus(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

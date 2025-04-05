@@ -3,12 +3,11 @@ package com.gestiongimnasio.backend.service.impl;
 import com.gestiongimnasio.backend.dto.get.PagoGetDTO;
 import com.gestiongimnasio.backend.dto.post.PagoPostDTO;
 import com.gestiongimnasio.backend.dto.put.PagoPutDTO;
+import com.gestiongimnasio.backend.mappers.PagoMapper;
 import com.gestiongimnasio.backend.model.*;
 import com.gestiongimnasio.backend.repository.*;
 import com.gestiongimnasio.backend.service.PagoService;
-import com.gestiongimnasio.backend.utils.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,202 +16,104 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class PagoServiceImpl implements PagoService {
 
     private final PagoRepository pagoRepository;
     private final ClienteRepository clienteRepository;
-    private final InscripcionRepository inscripcionRepository;
-    private final ModelMapper modelMapper;
+    private final PagoMapper pagoMapper;
 
     @Override
-    @Transactional(readOnly = true)
-    public PagoGetDTO getById(Long id) {
-        Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + id));
-        return toResponseDTO(pago);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PagoGetDTO> getByCliente(Long clienteId) {
-        if (!clienteRepository.existsById(clienteId)) {
-            throw new BusinessException("Cliente no encontrado con ID: " + clienteId);
-        }
-        return pagoRepository.findByClienteId(clienteId).stream()
-                .map(this::toResponseDTO)
+    public List<PagoGetDTO> findAllPagos() {
+        return pagoRepository.findAll()
+                .stream()
+                .map(pagoMapper::toGetDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<PagoGetDTO> getByEstado(Pago.EstadoPago estado) {
-        if (estado == null) {
-            throw new IllegalArgumentException("Estado de pago no puede ser nulo");
+    public PagoGetDTO findPagoById(Long id) {
+        Pago pago = pagoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + id));
+        return pagoMapper.toGetDto(pago);
+    }
+
+    @Override
+    public PagoGetDTO savePago(PagoPostDTO pagoPostDTO) {
+        // Validar existencia del cliente
+        Cliente cliente = clienteRepository.findById(pagoPostDTO.getClienteId()).orElseThrow();
+        // Validar monto positivo
+        if (pagoPostDTO.getMonto() <= 0) {
+            throw new RuntimeException("El monto del pago debe ser positivo");
         }
-        return pagoRepository.findByEstadoPago(estado).stream()
-                .map(this::toResponseDTO)
+
+        // Crear el pago
+        Pago pago = pagoMapper.toEntity(pagoPostDTO);
+        pago.setCliente(cliente);
+
+        Pago savedPago = pagoRepository.save(pago);
+        return pagoMapper.toGetDto(savedPago);
+    }
+
+    @Override
+    public PagoGetDTO updatePago(Long id, PagoPutDTO pagoPutDTO) {
+        Pago pago = pagoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + id));
+
+        // Validar entidades relacionadas si se están actualizando
+        if (pagoPutDTO.getClienteId() != null) {
+            Cliente cliente = clienteRepository.findById(pagoPutDTO.getClienteId()).orElseThrow();
+            pago.setCliente(cliente);
+        }
+
+        // Validar monto si se está actualizando
+        if (pagoPutDTO.getMonto() != null && pagoPutDTO.getMonto() <= 0) {
+            throw new RuntimeException("El monto del pago debe ser positivo");
+        }
+
+        pagoMapper.updateFromDto(pagoPutDTO, pago);
+        Pago updatedPago = pagoRepository.save(pago);
+        return pagoMapper.toGetDto(updatedPago);
+    }
+
+    @Override
+    public void deletePago(Long id) {
+        if (!pagoRepository.existsById(id)) {
+            throw new RuntimeException("Pago no encontrado con ID: " + id);
+        }
+        pagoRepository.deleteById(id);
+    }
+
+    @Override
+    public List<PagoGetDTO> findByCliente(Long clienteId) {
+        return pagoRepository.findByClienteId(clienteId)
+                .stream()
+                .map(pagoMapper::toGetDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<PagoGetDTO> getAll() {
-        return pagoRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
+    public PagoGetDTO procesarPago(Long pagoId) {
+        Pago pago = pagoRepository.findById(pagoId)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + pagoId));
 
-    @Override
-    public PagoGetDTO save(PagoPostDTO pagoDTO) {
-        validatePagoPostDTO(pagoDTO);
-
-        Pago pago = modelMapper.map(pagoDTO, Pago.class);
-        pago.setCliente(clienteRepository.getReferenceById(pagoDTO.getClienteId()));
-        pago.setEstadoPago(Pago.EstadoPago.PENDIENTE);
-        pago.setFechaPago(null);
-
-        handleInscripciones(pagoDTO, pago);
-
-        return toResponseDTO(pagoRepository.save(pago));
-    }
-
-    @Override
-    public PagoGetDTO update(Long id, PagoPutDTO pagoDTO) {
-        if (!id.equals(pagoDTO.getId())) {
-            throw new IllegalArgumentException("ID de pago no coincide");
-        }
-
-        Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + id));
-
-        validatePagoPutDTO(pagoDTO);
-        updatePagoFields(pagoDTO, pago);
-        handleInscripcionesUpdate(pagoDTO, pago);
-
-        return toResponseDTO(pagoRepository.save(pago));
-    }
-
-    @Override
-    public void delete(Long id) {
-        Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + id));
-
-        pago.getInscripciones().forEach(inscripcion -> inscripcion.setPago(null));
-        pagoRepository.delete(pago);
-    }
-
-    @Override
-    public PagoGetDTO marcarComoCompletado(Long id) {
-        Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + id));
-
-        validatePagoCompletado(pago);
-
-        pago.setEstadoPago(Pago.EstadoPago.COMPLETADO);
         pago.setFechaPago(LocalDate.now());
-        pago.getInscripciones().forEach(inscripcion -> inscripcion.setEstadoPago(true));
+        pago.setPagado(true);
 
-        return toResponseDTO(pagoRepository.save(pago));
+        Pago processedPago = pagoRepository.save(pago);
+        return pagoMapper.toGetDto(processedPago);
     }
 
-    private void validatePagoPostDTO(PagoPostDTO pagoDTO) {
-        if (pagoDTO == null) {
-            throw new IllegalArgumentException("Datos de pago no pueden ser nulos");
-        }
-        if (!clienteRepository.existsById(pagoDTO.getClienteId())) {
-            throw new BusinessException("Cliente no encontrado con ID: " + pagoDTO.getClienteId());
-        }
-        if (pagoDTO.getMonto() <= 0) {
-            throw new BusinessException("El monto del pago debe ser positivo");
-        }
+    @Override
+    public PagoGetDTO cancelarPago(Long pagoId) {
+        Pago pago = pagoRepository.findById(pagoId)
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + pagoId));
+
+        pago.setPagado(false);
+
+        Pago canceledPago = pagoRepository.save(pago);
+        return pagoMapper.toGetDto(canceledPago);
     }
 
-    private void handleInscripciones(PagoPostDTO pagoDTO, Pago pago) {
-        if (pagoDTO.getInscripcionesIds() != null && !pagoDTO.getInscripcionesIds().isEmpty()) {
-            List<Inscripcion> inscripciones = inscripcionRepository.findAllById(pagoDTO.getInscripcionesIds());
-
-            validateInscripciones(inscripciones, pagoDTO.getInscripcionesIds(), pagoDTO.getClienteId());
-
-            inscripciones.forEach(inscripcion -> inscripcion.setPago(pago));
-            pago.setInscripciones(inscripciones);
-        }
-    }
-
-    private void validatePagoPutDTO(PagoPutDTO pagoDTO) {
-        if (pagoDTO.getMonto() != null && pagoDTO.getMonto() <= 0) {
-            throw new BusinessException("El monto del pago debe ser positivo");
-        }
-    }
-
-    private void updatePagoFields(PagoPutDTO pagoDTO, Pago pago) {
-        modelMapper.getConfiguration().setSkipNullEnabled(true);
-        modelMapper.map(pagoDTO, pago);
-
-        if (pagoDTO.getEstadoPago() != null) {
-            pago.setEstadoPago(pagoDTO.getEstadoPago());
-            if (pagoDTO.getEstadoPago() == Pago.EstadoPago.COMPLETADO && pago.getFechaPago() == null) {
-                pago.setFechaPago(LocalDate.now());
-            }
-        }
-    }
-
-    private void handleInscripcionesUpdate(PagoPutDTO pagoDTO, Pago pago) {
-        if (pagoDTO.getInscripcionesIds() != null) {
-            pago.getInscripciones().forEach(inscripcion -> inscripcion.setPago(null));
-
-            if (!pagoDTO.getInscripcionesIds().isEmpty()) {
-                List<Inscripcion> nuevasInscripciones = inscripcionRepository.findAllById(pagoDTO.getInscripcionesIds());
-                validateInscripciones(nuevasInscripciones, pagoDTO.getInscripcionesIds(), pago.getCliente().getId());
-                nuevasInscripciones.forEach(inscripcion -> inscripcion.setPago(pago));
-                pago.setInscripciones(nuevasInscripciones);
-            } else {
-                pago.setInscripciones(List.of());
-            }
-        }
-    }
-
-    private void validateInscripciones(List<Inscripcion> inscripciones, List<Long> inscripcionesIds, Long clienteId) {
-        if (inscripciones.size() != inscripcionesIds.size()) {
-            throw new BusinessException("Una o más inscripciones no fueron encontradas");
-        }
-
-        inscripciones.forEach(inscripcion -> {
-            if (!inscripcion.getCliente().getId().equals(clienteId)) {
-                throw new BusinessException("La inscripción con ID " + inscripcion.getId() +
-                        " no pertenece al cliente con ID " + clienteId);
-            }
-            if (inscripcion.getPago() != null && !inscripcion.getPago().getId().equals(clienteId)) {
-                throw new BusinessException("La inscripción con ID " + inscripcion.getId() +
-                        " ya tiene un pago asociado");
-            }
-        });
-    }
-
-    private void validatePagoCompletado(Pago pago) {
-        if (pago.getEstadoPago() == Pago.EstadoPago.COMPLETADO) {
-            throw new BusinessException("El pago ya está completado");
-        }
-        if (pago.getEstadoPago() == Pago.EstadoPago.CANCELADO) {
-            throw new BusinessException("No se puede completar un pago cancelado");
-        }
-    }
-
-    private PagoGetDTO toResponseDTO(Pago pago) {
-        PagoGetDTO dto = modelMapper.map(pago, PagoGetDTO.class);
-
-        dto.setClienteId(pago.getCliente().getId());
-        dto.setClienteNombre(pago.getCliente().getNombre());
-
-        if (pago.getInscripciones() != null && !pago.getInscripciones().isEmpty()) {
-            dto.setInscripcionesIds(
-                    pago.getInscripciones().stream()
-                            .map(Inscripcion::getId)
-                            .collect(Collectors.toList())
-            );
-        }
-
-        return dto;
-    }
 }

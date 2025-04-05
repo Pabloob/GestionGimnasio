@@ -1,12 +1,12 @@
 package com.gestiongimnasio.backend.service.impl;
 
-import com.gestiongimnasio.backend.dto.get.ClaseHorarioGetDTO;
-import com.gestiongimnasio.backend.dto.post.ClaseHorarioPostDTO;
-import com.gestiongimnasio.backend.dto.put.ClaseHorarioPutDTO;
-import com.gestiongimnasio.backend.mappers.ClaseHorarioMapper;
+import com.gestiongimnasio.backend.dto.get.HorarioGetDTO;
+import com.gestiongimnasio.backend.dto.post.HorarioPostDTO;
+import com.gestiongimnasio.backend.dto.put.HorarioPutDTO;
+import com.gestiongimnasio.backend.mappers.HorarioMapper;
 import com.gestiongimnasio.backend.model.*;
 import com.gestiongimnasio.backend.repository.*;
-import com.gestiongimnasio.backend.service.ClaseHorarioService;
+import com.gestiongimnasio.backend.service.HorarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,94 +19,97 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ClaseHorarioServiceImpl implements ClaseHorarioService {
+public class HorarioServiceImpl implements HorarioService {
 
     private final ClaseHorarioRepository claseHorarioRepository;
     private final ClaseRepository claseRepository;
     private final SalaRepository salaRepository;
     private final TrabajadorRepository trabajadorRepository;
-    private final ClaseHorarioMapper claseHorarioMapper;
+    private final HorarioMapper horarioMapper;
 
     @Override
-    public List<ClaseHorarioGetDTO> findAll() {
+    public List<HorarioGetDTO> findAll() {
         return claseHorarioRepository.findAll()
                 .stream()
-                .map(claseHorarioMapper::toGetDto)
+                .map(horarioMapper::toHorarioGetDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ClaseHorarioGetDTO findById(Long id) {
-        ClaseHorario claseHorario = claseHorarioRepository.findById(id)
+    public HorarioGetDTO findById(Long id) {
+        Horario horario = claseHorarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Horario de clase no encontrado con ID: " + id));
-        return claseHorarioMapper.toGetDto(claseHorario);
+        return horarioMapper.toHorarioGetDTO(horario);
     }
 
     @Override
-    public ClaseHorarioGetDTO create(ClaseHorarioPostDTO dto) {
+    public HorarioGetDTO create(HorarioPostDTO dto) {
+
         // Validar entidades relacionadas
-        Clase clase = validateEntity((BaseRepository<Clase, Long>) claseRepository, dto.getClase(), "Clase");
-        Sala sala = validateEntity((BaseRepository<Sala, Long>) salaRepository, dto.getSala(), "Sala");
-        Trabajador instructor = validateEntity((BaseRepository<Trabajador, Long>) trabajadorRepository, dto.getInstructor(), "Instructor");
+        Clase clase = claseRepository.findById(dto.getClaseId()).orElseThrow();
+        Sala sala = salaRepository.findById(dto.getSalaId()).orElseThrow();
+        Trabajador instructor = trabajadorRepository.findById(dto.getInstructorId()).orElseThrow();
+
+        // Validar si el horario ya existe
+        boolean exists = claseHorarioRepository.existsByClaseAndSalaAndInstructorAndDiaSemanaAndHoraInicioAndHoraFin(
+                clase, sala, instructor, dto.getDiaSemana(), dto.getHoraInicio(), dto.getHoraFin()
+        );
+
+        if (exists) {
+            throw new IllegalArgumentException("Ya existe un horario con la misma clase, sala, instructor, día y horario.");
+        }
 
         // Validar horario
         validateSchedule(dto.getHoraInicio(), dto.getHoraFin());
 
         // Validar disponibilidad de sala e instructor
         validateAvailability(dto.getDiaSemana(), dto.getHoraInicio(), dto.getHoraFin(),
-                dto.getSala(), dto.getInstructor(), null);
+                dto.getSalaId(), dto.getInstructorId(), null);
 
-        ClaseHorario claseHorario = claseHorarioMapper.toEntity(dto);
-        setRelations(claseHorario, clase, sala, instructor);
+        Horario horario = horarioMapper.fromHorarioPostDTO(dto);
+        setRelations(horario, clase, sala, instructor);
 
-        clase.addHorario(claseHorario);
-        sala.addHorario(claseHorario);
-        instructor.addHorario(claseHorario);
-
-        ClaseHorario savedClaseHorario = claseHorarioRepository.save(claseHorario);
-        return claseHorarioMapper.toGetDto(savedClaseHorario);
+        Horario savedHorario = claseHorarioRepository.save(horario);
+        return horarioMapper.toHorarioGetDTO(savedHorario);
     }
 
+
     @Override
-    public ClaseHorarioGetDTO update(Long id, ClaseHorarioPutDTO dto) {
-        ClaseHorario claseHorario = claseHorarioRepository.findById(id)
+    public HorarioGetDTO update(Long id, HorarioPutDTO dto) {
+        Horario horario = claseHorarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Horario de clase no encontrado con ID: " + id));
 
         // Obtener entidades relacionadas si se están actualizando
-        Clase clase = dto.getClase() != null ?
-                validateEntity((BaseRepository<Clase, Long>) claseRepository, dto.getClase(), "Clase") :
-                claseHorario.getClase();
+        Clase clase = dto.getClaseId() != null ?
+                claseRepository.findById(dto.getClaseId()).orElseThrow() :
+                horario.getClase();
 
-        Sala sala = dto.getSala() != null ?
-                validateEntity((BaseRepository<Sala, Long>) salaRepository, dto.getSala(), "Sala") :
-                claseHorario.getSala();
+        Sala sala = dto.getSalaId() != null ?
+                salaRepository.findById(dto.getSalaId()).orElseThrow() :
+                horario.getSala();
 
-        Trabajador instructor = dto.getInstructor() != null ?
-                validateEntity((BaseRepository<Trabajador, Long>) trabajadorRepository, dto.getInstructor(), "Instructor") :
-                claseHorario.getInstructor();
+        Trabajador instructor = dto.getInstructorId() != null ?
+                trabajadorRepository.findById(dto.getInstructorId()).orElseThrow() :
+                horario.getInstructor();
 
         // Validar horario si se está actualizando
-        LocalTime horaInicio = dto.getHoraInicio() != null ? dto.getHoraInicio() : claseHorario.getHoraInicio();
-        LocalTime horaFin = dto.getHoraFin() != null ? dto.getHoraFin() : claseHorario.getHoraFin();
+        LocalTime horaInicio = dto.getHoraInicio() != null ? dto.getHoraInicio() : horario.getHoraInicio();
+        LocalTime horaFin = dto.getHoraFin() != null ? dto.getHoraFin() : horario.getHoraFin();
         validateSchedule(horaInicio, horaFin);
 
         // Validar disponibilidad
-        DayOfWeek dia = dto.getDiaSemana() != null ? dto.getDiaSemana() : claseHorario.getDiaSemana();
-        Long salaId = dto.getSala() != null ? dto.getSala() : claseHorario.getSala().getId();
-        Long instructorId = dto.getInstructor() != null ? dto.getInstructor() : claseHorario.getInstructor().getId();
+        DayOfWeek dia = dto.getDiaSemana() != null ? dto.getDiaSemana() : horario.getDiaSemana();
+        Long salaId = dto.getSalaId() != null ? dto.getSalaId() : horario.getSala().getId();
+        Long instructorId = dto.getInstructorId() != null ? dto.getInstructorId() : horario.getInstructor().getId();
 
         validateAvailability(dia, horaInicio, horaFin, salaId, instructorId, id);
 
         // Actualizar entidad
-        clase.addHorario(claseHorario);
-        sala.addHorario(claseHorario);
-        instructor.addHorario(claseHorario);
+        horarioMapper.fromHorarioPutDTO(dto, horario);
+        setRelations(horario, clase, sala, instructor);
 
-        claseHorarioMapper.updateFromDto(dto, claseHorario);
-        setRelations(claseHorario, clase, sala, instructor);
-
-        ClaseHorario updatedClaseHorario = claseHorarioRepository.save(claseHorario);
-        return claseHorarioMapper.toGetDto(updatedClaseHorario);
+        Horario updatedHorario = claseHorarioRepository.save(horario);
+        return horarioMapper.toHorarioGetDTO(updatedHorario);
     }
 
     @Override
@@ -118,46 +121,42 @@ public class ClaseHorarioServiceImpl implements ClaseHorarioService {
     }
 
     @Override
-    public List<ClaseHorarioGetDTO> findByClase(Long claseId) {
+    public List<HorarioGetDTO> findByClase(Long claseId) {
         return claseHorarioRepository.findByClaseId(claseId)
                 .stream()
-                .map(claseHorarioMapper::toGetDto)
+                .map(horarioMapper::toHorarioGetDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ClaseHorarioGetDTO> findBySala(Long salaId) {
+    public List<HorarioGetDTO> findBySala(Long salaId) {
         return claseHorarioRepository.findBySalaId(salaId)
                 .stream()
-                .map(claseHorarioMapper::toGetDto)
+                .map(horarioMapper::toHorarioGetDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ClaseHorarioGetDTO> findByInstructor(Long instructorId) {
+    public List<HorarioGetDTO> findByInstructor(Long instructorId) {
         return claseHorarioRepository.findByInstructorId(instructorId)
                 .stream()
-                .map(claseHorarioMapper::toGetDto)
+                .map(horarioMapper::toHorarioGetDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ClaseHorarioGetDTO> findByDia(DayOfWeek dia) {
+    public List<HorarioGetDTO> findByDia(DayOfWeek dia) {
         return claseHorarioRepository.findByDiaSemana(dia)
                 .stream()
-                .map(claseHorarioMapper::toGetDto)
+                .map(horarioMapper::toHorarioGetDTO)
                 .collect(Collectors.toList());
     }
 
-    private <T> T validateEntity(BaseRepository<T, Long> repository, Long entityId, String entityName) {
-        return repository.findById(entityId)
-                .orElseThrow(() -> new RuntimeException(entityName + " no encontrada con ID: " + entityId));
-    }
 
-    private void setRelations(ClaseHorario claseHorario, Clase clase, Sala sala, Trabajador instructor) {
-        claseHorario.setClase(clase);
-        claseHorario.setSala(sala);
-        claseHorario.setInstructor(instructor);
+    private void setRelations(Horario horario, Clase clase, Sala sala, Trabajador instructor) {
+        horario.setClase(clase);
+        horario.setSala(sala);
+        horario.setInstructor(instructor);
     }
 
     private void validateSchedule(LocalTime horaInicio, LocalTime horaFin) {

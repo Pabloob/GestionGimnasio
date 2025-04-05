@@ -1,12 +1,12 @@
 class InscripcionPostDTO {
   final int clienteId;
   final int claseId;
-  final int? pagoId;
+  final bool asistio;
 
   InscripcionPostDTO({
     required this.clienteId,
     required this.claseId,
-    this.pagoId,
+    required this.asistio,
   });
 
   // Factory para crear una instancia desde JSON
@@ -14,16 +14,12 @@ class InscripcionPostDTO {
     return InscripcionPostDTO(
       clienteId: json['clienteId'],
       claseId: json['claseId'],
-      pagoId: json['pagoId'],
+      asistio: json['asistio'],
     );
   }
 
   // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
-    return {
-      'clienteId': clienteId,
-      'claseId': claseId,
-      'pagoId': pagoId,
-    };
+    return {'clienteId': clienteId, 'claseId': claseId, 'asistio': asistio};
   }
 }

@@ -33,4 +33,6 @@ public class UsuarioPostDTO {
 
     @NotNull
     private TipoUsuario tipoUsuario;
+
+    private boolean activo = true;
 }

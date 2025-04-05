@@ -3,12 +3,12 @@ package com.gestiongimnasio.backend.service.impl;
 import com.gestiongimnasio.backend.dto.get.InscripcionGetDTO;
 import com.gestiongimnasio.backend.dto.post.InscripcionPostDTO;
 import com.gestiongimnasio.backend.dto.put.InscripcionPutDTO;
+import com.gestiongimnasio.backend.mappers.InscripcionMapper;
 import com.gestiongimnasio.backend.model.*;
 import com.gestiongimnasio.backend.repository.*;
+import com.gestiongimnasio.backend.service.ClaseService;
 import com.gestiongimnasio.backend.service.InscripcionService;
-import com.gestiongimnasio.backend.utils.BusinessException;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,195 +16,114 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class InscripcionServiceImpl implements InscripcionService {
 
     private final InscripcionRepository inscripcionRepository;
     private final ClienteRepository clienteRepository;
     private final ClaseRepository claseRepository;
-    private final PagoRepository pagoRepository;
-    private final ModelMapper modelMapper;
+    private final InscripcionMapper inscripcionMapper;
+    private final ClaseService claseService;
 
     @Override
-    @Transactional(readOnly = true)
-    public InscripcionGetDTO getById(Long id) {
+    public List<InscripcionGetDTO> findAllInscripciones() {
+        return inscripcionRepository.findAll()
+                .stream()
+                .map(inscripcionMapper::toGetDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public InscripcionGetDTO findInscripcionById(Long id) {
         Inscripcion inscripcion = inscripcionRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Inscripción no encontrada con ID: " + id));
-        return toResponseDTO(inscripcion);
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + id));
+        return inscripcionMapper.toGetDto(inscripcion);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<InscripcionGetDTO> getByCliente(Long clienteId) {
-        if (!clienteRepository.existsById(clienteId)) {
-            throw new BusinessException("Cliente no encontrado con ID: " + clienteId);
+    public InscripcionGetDTO saveInscripcion(InscripcionPostDTO inscripcionPostDTO) {
+        // Validar existencia de las entidades relacionadas
+        Cliente cliente = clienteRepository.findById(inscripcionPostDTO.getClienteId()).orElseThrow();
+        Clase clase = claseRepository.findById(inscripcionPostDTO.getClaseId()).orElseThrow();
+        // Validar que la clase esté activa
+        if (!clase.isActiva()) {
+            throw new RuntimeException("No se puede inscribir a una clase inactiva");
         }
-        return inscripcionRepository.findByClienteId(clienteId).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<InscripcionGetDTO> getByClase(Long claseId) {
-        if (!claseRepository.existsById(claseId)) {
-            throw new BusinessException("Clase no encontrada con ID: " + claseId);
+        // Validar cupos disponibles
+        if (!claseService.tieneCuposDisponibles(clase.getId())) {
+            throw new RuntimeException("La clase no tiene cupos disponibles");
         }
-        return inscripcionRepository.findByClaseId(claseId).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<InscripcionGetDTO> getAll() {
-        return inscripcionRepository.findAll().stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
-    }
+        // Validar que el cliente no esté ya inscrito en la clase
+        if (inscripcionRepository.existsByClienteIdAndClaseId(cliente.getId(), clase.getId())) {
+            throw new RuntimeException("El cliente ya está inscrito en esta clase");
+        }
 
-    @Override
-    public InscripcionGetDTO save(InscripcionPostDTO inscripcionDTO) {
-        validateInscripcionPostDTO(inscripcionDTO);
-
-        Cliente cliente = clienteRepository.findById(inscripcionDTO.getClienteId())
-                .orElseThrow(() -> new BusinessException("Cliente no encontrado con ID: " + inscripcionDTO.getClienteId()));
-
-        Clase clase = claseRepository.findById(inscripcionDTO.getClaseId())
-                .orElseThrow(() -> new BusinessException("Clase no encontrada con ID: " + inscripcionDTO.getClaseId()));
-
-        validateClaseCapacity(clase);
-        validateDuplicateInscripcion(cliente.getId(), clase.getId());
-
-        Inscripcion inscripcion = modelMapper.map(inscripcionDTO, Inscripcion.class);
+        // Crear la inscripción
+        Inscripcion inscripcion = inscripcionMapper.toEntity(inscripcionPostDTO);
         inscripcion.setCliente(cliente);
         inscripcion.setClase(clase);
-        inscripcion.setEstadoPago(false);
 
-        handlePagoAssociation(inscripcionDTO, inscripcion);
-
-        return toResponseDTO(inscripcionRepository.save(inscripcion));
+        Inscripcion savedInscripcion = inscripcionRepository.save(inscripcion);
+        return inscripcionMapper.toGetDto(savedInscripcion);
     }
 
     @Override
-    public InscripcionGetDTO update(Long id, InscripcionPutDTO inscripcionDTO) {
+    public InscripcionGetDTO updateInscripcion(Long id, InscripcionPutDTO inscripcionPutDTO) {
         Inscripcion inscripcion = inscripcionRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Inscripción no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + id));
 
-        modelMapper.getConfiguration().setSkipNullEnabled(true);
-        modelMapper.map(inscripcionDTO, inscripcion);
+        // Validar entidades relacionadas si se están actualizando
+        if (inscripcionPutDTO.getClienteId() != null) {
+            Cliente cliente = clienteRepository.findById(inscripcionPutDTO.getClienteId()).orElseThrow();
+            inscripcion.setCliente(cliente);
 
-        handlePagoUpdate(inscripcionDTO, inscripcion);
-
-        return toResponseDTO(inscripcionRepository.save(inscripcion));
-    }
-
-    @Override
-    public void delete(Long id) {
-        Inscripcion inscripcion = inscripcionRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Inscripción no encontrada con ID: " + id));
-        inscripcionRepository.delete(inscripcion);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsInscripcion(Long clienteId, Long claseId) {
-        return inscripcionRepository.existsByClienteIdAndClaseId(clienteId, claseId);
-    }
-
-    @Override
-    public InscripcionGetDTO confirmarPago(Long inscripcionId, Long pagoId) {
-        Inscripcion inscripcion = inscripcionRepository.findById(inscripcionId)
-                .orElseThrow(() -> new BusinessException("Inscripción no encontrada con ID: " + inscripcionId));
-
-        Pago pago = pagoRepository.findById(pagoId)
-                .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + pagoId));
-
-        validatePagoClienteMatch(pago, inscripcion.getCliente().getId());
-
-        inscripcion.setPago(pago);
-        inscripcion.setEstadoPago(true);
-
-        return toResponseDTO(inscripcionRepository.save(inscripcion));
-    }
-
-    @Override
-    public InscripcionGetDTO confirmarAsistencia(Long inscripcionId) {
-        Inscripcion inscripcion = inscripcionRepository.findById(inscripcionId)
-                .orElseThrow(() -> new BusinessException("Inscripción no encontrada con ID: " + inscripcionId));
-
-        if (!inscripcion.getEstadoPago()) {
-            throw new BusinessException("No se puede confirmar asistencia sin pago confirmado");
         }
+        if (inscripcionPutDTO.getClaseId() != null) {
+            Clase clase = claseRepository.findById(inscripcionPutDTO.getClaseId()).orElseThrow();
+            inscripcion.setClase(clase);
+        }
+
+        inscripcionMapper.updateFromDto(inscripcionPutDTO, inscripcion);
+
+
+        Inscripcion updatedInscripcion = inscripcionRepository.save(inscripcion);
+        return inscripcionMapper.toGetDto(updatedInscripcion);
+    }
+
+    @Override
+    public void deleteInscripcion(Long id) {
+        if (!inscripcionRepository.existsById(id)) {
+            throw new RuntimeException("Inscripción no encontrada con ID: " + id);
+        }
+        inscripcionRepository.deleteById(id);
+    }
+
+    @Override
+    public List<InscripcionGetDTO> findByCliente(Long clienteId) {
+        return inscripcionRepository.findByClienteId(clienteId)
+                .stream()
+                .map(inscripcionMapper::toGetDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<InscripcionGetDTO> findByClase(Long claseId) {
+        return inscripcionRepository.findByClaseId(claseId)
+                .stream()
+                .map(inscripcionMapper::toGetDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void registrarAsistencia(Long inscripcionId) {
+        Inscripcion inscripcion = inscripcionRepository.findById(inscripcionId)
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + inscripcionId));
 
         inscripcion.setAsistio(true);
-        return toResponseDTO(inscripcionRepository.save(inscripcion));
+        inscripcionRepository.save(inscripcion);
     }
 
-    private void validateInscripcionPostDTO(InscripcionPostDTO inscripcionDTO) {
-        if (inscripcionDTO == null) {
-            throw new IllegalArgumentException("Datos de inscripción no pueden ser nulos");
-        }
-    }
-
-    private void validateClaseCapacity(Clase clase) {
-        long inscritos = inscripcionRepository.countByClaseId(clase.getId());
-        if (inscritos >= clase.getCapacidadMaxima()) {
-            throw new BusinessException("La clase ha alcanzado su capacidad máxima");
-        }
-    }
-
-    private void validateDuplicateInscripcion(Long clienteId, Long claseId) {
-        if (existsInscripcion(clienteId, claseId)) {
-            throw new BusinessException("El cliente ya está inscrito en esta clase");
-        }
-    }
-
-    private void handlePagoAssociation(InscripcionPostDTO inscripcionDTO, Inscripcion inscripcion) {
-        if (inscripcionDTO.getPagoId() != null) {
-            Pago pago = pagoRepository.findById(inscripcionDTO.getPagoId())
-                    .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + inscripcionDTO.getPagoId()));
-            validatePagoClienteMatch(pago, inscripcionDTO.getClienteId());
-            inscripcion.setPago(pago);
-            inscripcion.setEstadoPago(true);
-        }
-    }
-
-    private void handlePagoUpdate(InscripcionPutDTO inscripcionDTO, Inscripcion inscripcion) {
-        if (inscripcionDTO.getPagoId() != null) {
-            Pago pago = pagoRepository.findById(inscripcionDTO.getPagoId())
-                    .orElseThrow(() -> new BusinessException("Pago no encontrado con ID: " + inscripcionDTO.getPagoId()));
-            validatePagoClienteMatch(pago, inscripcion.getCliente().getId());
-            inscripcion.setPago(pago);
-            inscripcion.setEstadoPago(true);
-        } else if (inscripcionDTO.getEstadoPago() != null) {
-            inscripcion.setEstadoPago(inscripcionDTO.getEstadoPago());
-        }
-    }
-
-    private void validatePagoClienteMatch(Pago pago, Long clienteId) {
-        if (!pago.getCliente().getId().equals(clienteId)) {
-            throw new BusinessException("El pago no corresponde al cliente de la inscripción");
-        }
-        if (pago.getEstadoPago() != Pago.EstadoPago.COMPLETADO) {
-            throw new BusinessException("El pago no está completado");
-        }
-    }
-
-    private InscripcionGetDTO toResponseDTO(Inscripcion inscripcion) {
-        InscripcionGetDTO dto = modelMapper.map(inscripcion, InscripcionGetDTO.class);
-
-        dto.setClienteId(inscripcion.getCliente().getId());
-        dto.setClienteNombre(inscripcion.getCliente().getNombre());
-
-        dto.setClaseId(inscripcion.getClase().getId());
-        dto.setClaseNombre(inscripcion.getClase().getNombre());
-
-        if (inscripcion.getPago() != null) {
-            dto.setPagoId(inscripcion.getPago().getId());
-        }
-
-        return dto;
-    }
 }

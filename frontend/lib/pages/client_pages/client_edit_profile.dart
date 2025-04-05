@@ -1,321 +1,236 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/api_cliente.dart';
-import 'package:frontend/apis/api_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:frontend/models/get/ClienteGetDTO.dart';
 import 'package:frontend/models/put/ClientePutDTO.dart';
+import 'package:frontend/models/put/UsuarioPutDTO.dart';
+import 'package:frontend/providers/cliente_providers.dart';
+import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/utils/utils.dart';
+import 'package:frontend/theme/app_theme.dart';
 
-class ClientEditProfile extends StatefulWidget {
+class ClientEditProfile extends ConsumerStatefulWidget {
   const ClientEditProfile({super.key});
 
   @override
-  State<ClientEditProfile> createState() => _ClientEditProfileState();
+  ConsumerState<ClientEditProfile> createState() => _ClientEditProfileState();
 }
 
-class _ClientEditProfileState extends State<ClientEditProfile> {
+class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  final ApiCliente _apiCliente = ApiCliente(apiService: ApiService());
-
-  String _mensajeError = "";
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: _buildAppBar(),
-        backgroundColor: Colors.transparent,
+        title: const Text('Editar perfil'),
         elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // My Account
-                  ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text('Cambiar nombre'),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      _showConfirmationDialog(
-                        _nameController,
-                        'nombre',
-                        Icons.person,
-                      );
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(Icons.lock),
-                    title: Text('Cambiar contraseña'),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      _showConfirmationDialog(
-                        _passwordController,
-                        'contraseña',
-                        Icons.lock,
-                      );
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(Icons.email),
-                    title: Text('Cambiar correo electronico'),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      _showConfirmationDialog(
-                        _emailController,
-                        'correo electrónico',
-                        Icons.email,
-                      );
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
-                    leading: Icon(Icons.phone),
-                    title: Text('Cambiar telefono'),
-                    trailing: Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      _showConfirmationDialog(
-                        _phoneController,
-                        'telefono',
-                        Icons.phone,
-                      );
-                    },
-                  ),
-                  _isLoading
-                      ? Center(child: CircularProgressIndicator())
-                      : SizedBox(),
-                  // Error message for any issues
-                  if (_mensajeError.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        _mensajeError,
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                ],
-              ),
+      body: userAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text('Error: $error', style: AppTheme.errorText),
+        ),
+        data: (user) => _buildEditForm(user, context),
+      ),
+    );
+  }
+
+  Widget _buildEditForm(ClienteGetDTO user, BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: AppTheme.defaultPadding,
+        children: [
+          _buildEditTile(
+            context: context,
+            icon: Icons.person,
+            title: 'Nombre',
+            value: user.usuario.nombre,
+            validator: (value) => value?.isEmpty ?? true ? 'Campo requerido' : null,
+            onSave: (newValue) => _updateName(newValue),
+          ),
+          const Divider(height: 1),
+          _buildEditTile(
+            context: context,
+            icon: Icons.email,
+            title: 'Correo electrónico',
+            value: user.usuario.correo,
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Campo requerido';
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                return 'Correo no válido';
+              }
+              return null;
+            },
+            onSave: (newValue) => _updateEmail(newValue),
+          ),
+          const Divider(height: 1),
+          _buildEditTile(
+            context: context,
+            icon: Icons.phone,
+            title: 'Teléfono',
+            value: user.usuario.telefono,
+            validator: (value) => value?.isEmpty ?? true ? 'Campo requerido' : null,
+            onSave: (newValue) => _updatePhone(newValue),
+          ),
+          const Divider(height: 1),
+          _buildEditTile(
+            context: context,
+            icon: Icons.lock,
+            title: 'Contraseña',
+            isPassword: true,
+            validator: (value) {
+              if (value?.isEmpty ?? true) return 'Campo requerido';
+              if (value!.length < 6) return 'Mínimo 6 caracteres';
+              return null;
+            },
+            onSave: (newValue) => _updatePassword(newValue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditTile({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    String? value,
+    bool isPassword = false,
+    String? Function(String?)? validator,
+    required Future<bool> Function(String) onSave,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.primaryColor),
+      title: Text(title, style: AppTheme.subtitleStyle),
+      subtitle: value != null ? Text(value) : null,
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () => _showEditDialog(
+        context,
+        title: title,
+        initialValue: value ?? '',
+        isPassword: isPassword,
+        validator: validator,
+        onSave: onSave,
+      ),
+    );
+  }
+
+  void _showEditDialog(
+      BuildContext context, {
+        required String title,
+        required String initialValue,
+        required bool isPassword,
+        String? Function(String?)? validator,
+        required Future<bool> Function(String) onSave,
+      }) {
+    final controller = TextEditingController(text: initialValue);
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Editar $title', style: AppTheme.dialogTitleStyle),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            decoration: InputDecoration(
+              hintText: 'Nuevo $title',
+              border: const OutlineInputBorder(),
             ),
+            validator: validator,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return const Text(
-      "Editar Perfil",
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Color(0xfffa6045),
-      ),
-    );
-  }
-
-  void _showConfirmationDialog(
-    TextEditingController controller,
-    String fieldName,
-    IconData icon, {
-    bool isPassword = false,
-  }) {
-    bool isLoading = false;
-    String errorMessage = '';
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: Text('Confirmar cambio de $fieldName'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: controller,
-                    obscureText: isPassword,
-                    decoration: InputDecoration(
-                      labelText: 'Nuevo $fieldName',
-                      prefixIcon: Icon(icon),
-                    ),
-                  ),
-                  if (errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isLoading ? null : () => Navigator.pop(context),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () async {
-                            if (controller.text.isEmpty) {
-                              setStateDialog(() {
-                                errorMessage = 'Por favor ingresa un valor';
-                              });
-                              return;
-                            }
-
-                            setStateDialog(() {
-                              isLoading = true;
-                              errorMessage = '';
-                            });
-
-                            try {
-                              final success = await _saveProfile(fieldName);
-                              if (success) {
-                                Navigator.pop(context);
-                                _showRestartAppDialog();
-                              } else {
-                                setStateDialog(() {
-                                  errorMessage = 'Error al actualizar';
-                                  isLoading = false;
-                                });
-                              }
-                            } catch (e) {
-                              setStateDialog(() {
-                                errorMessage = _getUserFriendlyError(e);
-                                isLoading = false;
-                              });
-                            }
-                          },
-                  child:
-                      isLoading
-                          ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                          : const Text('Confirmar'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showRestartAppDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Actualización exitosa'),
-            content: const Text(
-              'Los cambios se aplicarán después de reiniciar la aplicación.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => restartApp(context),
-                child: const Text('Reiniciar ahora'),
-              ),
-            ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
           ),
+          TextButton(
+            onPressed: () async {
+              if (formKey.currentState?.validate() ?? false) {
+                final success = await onSave(controller.text);
+                if (success && context.mounted) {
+                  Navigator.pop(context);
+                  _showRestartAppDialog(context);
+                }
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<bool> _saveProfile(String field) async {
-    // Validación específica para el campo que se está editando
-    switch (field) {
-      case 'nombre':
-        if (_nameController.text.isEmpty) {
-          throw Exception('El nombre no puede estar vacio');
-        }
-        break;
-      case 'correo electrónico':
-        if (_emailController.text.isEmpty) {
-          throw Exception('El correo no puede estar vacio');
-        }
-        if (!RegExp(
-          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-        ).hasMatch(_emailController.text)) {
-          throw Exception('El correo no es valido');
-        }
-        break;
-      case 'teléfono':
-        if (_phoneController.text.isEmpty) {
-          throw Exception('El teléfono no puede estar vacio');
-        }
-        break;
-      case 'contraseña':
-        if (_passwordController.text.isEmpty) {
-          throw Exception('La contraseña no puede estar vacía');
-        }
-        break;
-    }
+  void _showRestartAppDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Actualización exitosa'),
+        content: const Text(
+          'Los cambios se aplicarán después de reiniciar la aplicación.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => AuthService().logout(context),
+            child: const Text('Reiniciar ahora'),
+          ),
+        ],
+      ),
+    );
+  }
 
-    if (!_formKey.currentState!.validate()) return false;
+  Future<bool> _updateName(String newValue) async {
+    return await _saveProfile('nombre', newValue);
+  }
 
-    setState(() => _isLoading = true);
+  Future<bool> _updateEmail(String newValue) async {
+    return await _saveProfile('correo', newValue);
+  }
 
+  Future<bool> _updatePhone(String newValue) async {
+    return await _saveProfile('telefono', newValue);
+  }
+
+  Future<bool> _updatePassword(String newValue) async {
+    return await _saveProfile('contraseña', newValue);
+  }
+
+  Future<bool> _saveProfile(String field, String value) async {
     try {
-      final userId = await obtenerUserIdDesdeToken();
+      final userId = await AuthService().getUserId();
       if (userId == null) throw Exception('Usuario no autenticado');
 
-      // Crear DTO con solo el campo a actualizar
       final cliente = ClientePutDTO(
-        id: userId,
-        nombre: field == 'nombre' ? _nameController.text.trim() : null,
-        correo:
-            field == 'correo electrónico' ? _emailController.text.trim() : null,
-        telefono: field == 'teléfono' ? _phoneController.text.trim() : null,
-        contrasena:
-            field == 'contraseña' ? _passwordController.text.trim() : null,
+        usuarioPutDTO: UsuarioPutDTO(
+          nombre: field == 'nombre' ? value.trim() : null,
+          contrasena: field == 'contraseña' ? value.trim() : null,
+          correo: field == 'correo' ? value.trim() : null,
+          telefono: field == 'telefono' ? value.trim() : null,
+        ),
       );
 
-      await _apiCliente.actualizarCliente(userId, cliente);
+      await ref.read(
+        updateClienteProvider(UpdateClienteParams(userId, cliente)).future,
+      );
       return true;
     } catch (e) {
-      setState(() => _mensajeError = _getUserFriendlyError(e));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al actualizar: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return false;
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  String _getUserFriendlyError(dynamic error) {
-    if (error.toString().contains('connection')) {
-      return 'Error de conexión';
-    } else if (error.toString().contains('401')) {
-      return 'Sesión expirada';
-    }
-    return error.toString();
   }
 }
