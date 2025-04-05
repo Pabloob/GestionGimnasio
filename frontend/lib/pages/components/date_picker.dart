@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/theme/app_theme.dart';
 
 class DatePickerWidget extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final Function(DateTime) onDateSelected;
+  final Future<void> Function(dynamic _)? onFieldSubmitted;
+  final bool future;
 
-  DatePickerWidget({
+  const DatePickerWidget({
+    super.key,
     required this.controller,
     required this.label,
     required this.onDateSelected,
+    this.onFieldSubmitted,
+    this.future = false,
   });
 
   @override
@@ -18,14 +24,9 @@ class DatePickerWidget extends StatelessWidget {
       child: AbsorbPointer(
         child: TextFormField(
           controller: controller,
-          decoration: InputDecoration(
-            labelText: label,
-            prefixIcon: Icon(Icons.calendar_today, color: Color(0xFF0057FF)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            filled: true,
-            fillColor: Colors.white,
+          onFieldSubmitted: onFieldSubmitted,
+          decoration: AppTheme.inputDecoration(label).copyWith(
+            prefixIcon: Icon(Icons.calendar_today, color: AppTheme.primaryColor),
           ),
         ),
       ),
@@ -37,8 +38,18 @@ class DatePickerWidget extends StatelessWidget {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      lastDate: future ? DateTime(2101) : DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(primary: AppTheme.primaryColor),
+            dialogBackgroundColor: Colors.white,
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
       onDateSelected(picked);
     }
