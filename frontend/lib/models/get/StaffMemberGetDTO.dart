@@ -1,15 +1,15 @@
 
 import '../enums.dart';
-import 'UserPostDTO.dart';
+import 'UserGetDTO.dart';
 
-class StaffMemberPostDTO {
-  final UserPostDTO user;
+class StaffMemberGetDTO {
+  final UserGetDTO user;
   final String address;
   final DateTime startTime;
   final DateTime endTime;
   final StaffType staffType;
 
-  StaffMemberPostDTO({
+  StaffMemberGetDTO({
     required this.user,
     required this.address,
     required this.startTime,
@@ -17,9 +17,9 @@ class StaffMemberPostDTO {
     required this.staffType,
   });
 
-  factory StaffMemberPostDTO.fromJson(Map<String, dynamic> json) {
-    return StaffMemberPostDTO(
-      user: UserPostDTO.fromJson(json['user']),
+  factory StaffMemberGetDTO.fromJson(Map<String, dynamic> json) {
+    return StaffMemberGetDTO(
+      user: UserGetDTO.fromJson(json['user']),
       address: json['address'],
       startTime: DateTime.parse(json['startTime']),
       endTime: DateTime.parse(json['endTime']),
