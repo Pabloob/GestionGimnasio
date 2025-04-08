@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/get/UsuarioGetDTO.dart';
+import 'package:frontend/models/get/UserGetDTO.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
@@ -31,10 +31,7 @@ class CommonWidgets {
                   ),
                   backgroundColor: AppTheme.primaryColor,
                 ),
-                child: Text(
-                  textButton1,
-                  style: AppTheme.buttonTextStyle,
-                ),
+                child: Text(textButton1, style: AppTheme.buttonTextStyle),
               ),
             ),
           ),
@@ -65,27 +62,6 @@ class CommonWidgets {
     );
   }
 
-  // Widget para mostrar un mensaje de error
-  static Widget buildErrorText({
-    required String text,
-    bool isVisible = true,
-    EdgeInsets padding = const EdgeInsets.only(top: 8),
-    TextStyle? style,
-    TextAlign? textAlign,
-  }) {
-    return Visibility(
-      visible: isVisible && text.isNotEmpty,
-      child: Padding(
-        padding: padding,
-        child: Text(
-          text,
-          style: style ?? AppTheme.errorText,
-          textAlign: textAlign ?? TextAlign.center,
-        ),
-      ),
-    );
-  }
-
   // Widget para crear un campo de texto o contraseña
   static Widget buildTextField({
     required TextEditingController controller,
@@ -106,7 +82,7 @@ class CommonWidgets {
           child: TextFormField(
             controller: controller,
             keyboardType:
-            isPassword ? TextInputType.visiblePassword : keyboardType,
+                isPassword ? TextInputType.visiblePassword : keyboardType,
             obscureText: isPassword ? !isPasswordVisible : false,
             onFieldSubmitted: onFieldSubmitted,
             validator: (value) {
@@ -140,21 +116,21 @@ class CommonWidgets {
               filled: true,
               fillColor: Colors.white,
               suffixIcon:
-              isPassword
-                  ? IconButton(
-                icon: Icon(
-                  isPasswordVisible
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                  color: const Color(0xfffa6045),
-                ),
-                onPressed: () {
-                  setState(() {
-                    isPasswordVisible = !isPasswordVisible;
-                  });
-                },
-              )
-                  : null,
+                  isPassword
+                      ? IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: const Color(0xfffa6045),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      )
+                      : null,
               errorStyle: const TextStyle(fontSize: 12),
             ),
           ),
@@ -196,9 +172,9 @@ class CommonWidgets {
 
   // Función para seleccionar hora
   static Future<void> _selectTime(
-      BuildContext context,
-      TextEditingController controller,
-      ) async {
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
@@ -218,13 +194,14 @@ class CommonWidgets {
     );
 
     if (time != null) {
-      controller.text = "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
+      controller.text =
+          "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
     }
   }
 
   // Widget para crear un mensaje de encabezado personalizado
   static Widget buildCustomTopMesage({
-    UsuarioGetDTO? user,
+    UserGetDTO? user,
     String? textoPrincipal,
     String? textoSecundario,
     CircleAvatar? avatar,
@@ -246,7 +223,7 @@ class CommonWidgets {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${textoPrincipal ?? ''} ${user?.nombre ?? ''}',
+                '${textoPrincipal ?? ''} ${user?.name ?? ''}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -256,10 +233,7 @@ class CommonWidgets {
               if (textoSecundario != null)
                 Text(
                   textoSecundario,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
                 ),
             ],
           ),
@@ -267,4 +241,5 @@ class CommonWidgets {
       ),
     );
   }
+
 }

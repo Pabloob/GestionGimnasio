@@ -1,4 +1,4 @@
-package com.gestiongimnasio.backend.security;
+package com.gymmanagement.backend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,8 +43,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Permitir endpoints públicos
-                        .requestMatchers("/api/usuarios/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/clientes").permitAll()
+                        .requestMatchers("/api/users/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()
 
                         .anyRequest().authenticated()
                 )

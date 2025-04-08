@@ -4,39 +4,34 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.gymmanagement.backend.model.Room;
+import com.gymmanagement.backend.model.Schedule;
+import com.gymmanagement.backend.model.StaffMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.gymmanagement.backend.model.FitnessClass;
-import com.gymmanagement.backend.model.Horario;
-import com.gymmanagement.backend.model.Sala;
-import com.gestiongimnasio.backend.model.Trabajador;
 
 import jakarta.validation.constraints.NotNull;
 
 @Repository
-public interface ClaseHorarioRepository extends JpaRepository<Horario, Long> {
-
-
-    List<Horario> findByClaseId(Long claseId);
-
-    void deleteByClaseId(Long claseId);
+public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     boolean existsByInstructorId(Long id);
+    List<Schedule> findByInstructorId(Long instructorId);
+    boolean existsByFitnessClassAndRoomAndInstructorAndDayOfWeekAndStartTimeAndEndTime(FitnessClass fitnessClass, Room room, StaffMember instructor, @NotNull DayOfWeek dayOfWeek, @NotNull LocalTime startTime, @NotNull LocalTime endTime);
 
-    List<Horario> findByInstructorIdAndDiaSemana(Long trabajadorId, DayOfWeek dia);
+    List<Schedule> findByFitnessClassId(Long fitnessClassId);
 
-    boolean existsBySalaId(Long id);
+    List<Schedule> findByRoomId(Long roomId);
 
-    List<Horario> findBySalaId(Long salaId);
+    List<Schedule> findByDayOfWeek(DayOfWeek day);
 
-    List<Horario> findByInstructorId(Long instructorId);
+    boolean existsByDayOfWeekAndRoomIdAndStartTimeLessThanAndEndTimeGreaterThanAndIdNot(DayOfWeek day, Long roomId, LocalTime endTime, LocalTime startTime, Long excludeId);
 
-    List<Horario> findByDiaSemana(DayOfWeek dia);
+    boolean existsByDayOfWeekAndInstructorIdAndStartTimeLessThanAndEndTimeGreaterThanAndIdNot(DayOfWeek day, Long instructorId, LocalTime endTime, LocalTime startTime, Long excludeId);
 
-    boolean existsByDiaSemanaAndSalaIdAndHoraInicioLessThanAndHoraFinGreaterThanAndIdNot(DayOfWeek dia, Long salaId, LocalTime horaFin, LocalTime horaInicio, Long excludeId);
+    boolean existsByRoomId(Long id);
 
-    boolean existsByDiaSemanaAndInstructorIdAndHoraInicioLessThanAndHoraFinGreaterThanAndIdNot(DayOfWeek dia, Long instructorId, LocalTime horaFin, LocalTime horaInicio, Long excludeId);
-
-    boolean existsByClaseAndSalaAndInstructorAndDiaSemanaAndHoraInicioAndHoraFin(FitnessClass clase, Sala sala, Trabajador instructor, @NotNull DayOfWeek diaSemana, @NotNull LocalTime horaInicio, @NotNull LocalTime horaFin);
+    List<Schedule> findByInstructorIdAndDayOfWeek(Long staffMemberId, DayOfWeek day);
 }

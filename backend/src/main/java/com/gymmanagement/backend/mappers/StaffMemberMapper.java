@@ -14,13 +14,13 @@ import com.gymmanagement.backend.model.StaffMember;
 public interface StaffMemberMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", source = "dto.userPostDTO.name")
-    @Mapping(target = "password", source = "dto.userPostDTO.password")
-    @Mapping(target = "email", source = "dto.userPostDTO.email")
-    @Mapping(target = "phone", source = "dto.userPostDTO.phone")
-    @Mapping(target = "birthDate", source = "dto.userPostDTO.birthDate")
-    @Mapping(target = "userType", source = "dto.userPostDTO.userType")
-    @Mapping(target = "active", source = "dto.userPostDTO.active")
+    @Mapping(target = "name", source = "dto.user.name")
+    @Mapping(target = "password", source = "dto.user.password")
+    @Mapping(target = "email", source = "dto.user.email")
+    @Mapping(target = "phone", source = "dto.user.phone")
+    @Mapping(target = "birthDate", source = "dto.user.birthDate")
+    @Mapping(target = "userType", source = "dto.user.userType")
+    @Mapping(target = "active", source = "dto.user.active")
     @Mapping(target = "registrationDate", ignore = true)
     @Named("mapPostDtoToStaffEntity")
     StaffMember mapPostDtoToStaffEntity(StaffMemberPostDTO dto);

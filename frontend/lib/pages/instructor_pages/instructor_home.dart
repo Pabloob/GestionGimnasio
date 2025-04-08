@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/HorarioGetDTO.dart';
+import 'package:frontend/models/get/ScheduleGetDTO.dart';
 import 'package:frontend/providers/horario_provider.dart';
 import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/theme/app_theme.dart';
@@ -14,7 +14,7 @@ class InstructorHomePage extends ConsumerStatefulWidget {
 }
 
 class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
-  late Map<DateTime, List<HorarioGetDTO>> _horariosPorDia;
+  late Map<DateTime, List<ScheduleGetDTO>> _horariosPorDia;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   DateTime? _firstDay;
@@ -27,7 +27,7 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
     _selectedDay = DateTime.now();
   }
 
-  List<HorarioGetDTO> _getHorariosParaDia(DateTime day) {
+  List<ScheduleGetDTO> _getHorariosParaDia(DateTime day) {
     return _horariosPorDia[DateTime.utc(day.year, day.month, day.day)] ?? [];
   }
 
@@ -65,13 +65,13 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
     );
   }
 
-  void _calculateDateRange(List<HorarioGetDTO> horarios) {
+  void _calculateDateRange(List<ScheduleGetDTO> horarios) {
     if (horarios.isNotEmpty) {
       _firstDay = horarios
-          .map((h) => h.fechasInicio)
+          .map((h) => h.startDate)
           .reduce((a, b) => a.isBefore(b) ? a : b);
       _lastDay = horarios
-          .map((h) => h.fechaFin)
+          .map((h) => h.endDate)
           .reduce((a, b) => a.isAfter(b) ? a : b);
     } else {
       _firstDay = DateTime.now();
@@ -85,24 +85,24 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
     }
   }
 
-  void _processHorarios(List<HorarioGetDTO> horarios) {
+  void _processHorarios(List<ScheduleGetDTO> horarios) {
     _horariosPorDia.clear();
 
     for (var horario in horarios) {
       final currentDay = DateTime(
-        horario.fechasInicio.year,
-        horario.fechasInicio.month,
-        horario.fechasInicio.day,
+        horario.startDate.year,
+        horario.startDate.month,
+        horario.startDate.day,
       );
       final endDay = DateTime(
-        horario.fechaFin.year,
-        horario.fechaFin.month,
-        horario.fechaFin.day,
+        horario.endDate.year,
+        horario.endDate.month,
+        horario.endDate.day,
       );
 
       DateTime day = currentDay;
       while (day.isBefore(endDay) || day.isAtSameMomentAs(endDay)) {
-        if (day.weekday == horario.diaSemana.index + 1) {
+        if (day.weekday == horario.dayOfWeek.index + 1) {
           final normalizedDay = DateTime.utc(day.year, day.month, day.day);
           _horariosPorDia.update(
             normalizedDay,
@@ -123,7 +123,7 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: TableCalendar<HorarioGetDTO>(
+        child: TableCalendar<ScheduleGetDTO>(
           firstDay: _firstDay!,
           lastDay: _lastDay!,
           focusedDay: _focusedDay,
@@ -218,7 +218,7 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
                 ),
               ),
               title: Text(
-                horario.clase.nombre,
+                horario.fitnessClass.name,
                 style: AppTheme.cardTitleStyle,
               ),
               subtitle: Column(
@@ -226,12 +226,12 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
                 children: [
                   const SizedBox(height: 4),
                   Text(
-                    'Sala: ${horario.sala.nombre}',
+                    'Sala: ${horario.room.name}',
                     style: AppTheme.cardSubtitleStyle,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_formatTime(horario.horaInicio)} - ${_formatTime(horario.horaFin)}',
+                    '${_formatTime(horario.startTime)} - ${_formatTime(horario.endTime)}',
                     style: AppTheme.cardSubtitleStyle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

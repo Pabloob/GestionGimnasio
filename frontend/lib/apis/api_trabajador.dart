@@ -1,58 +1,59 @@
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/enums.dart';
-import 'package:frontend/models/get/TrabajadorGetDTO.dart';
-import 'package:frontend/models/post/TrabajadorPostDTO.dart';
-import 'package:frontend/models/put/TrabajadorPutDTO.dart';
+// staff_member_controller.dart
 
-class ApiTrabajador {
+import '../models/get/StaffMemberGetDTO.dart';
+import '../models/post/TrabajadorPostDTO.dart';
+import '../models/put/StaffMemberPutDTO.dart';
+import 'api_service.dart';
 
+class StaffMemberController {
   final ApiService _apiService;
 
-  ApiTrabajador({required ApiService apiService}) : _apiService = apiService;
+  StaffMemberController({required ApiService apiService}) : _apiService = apiService;
 
-  // Obtener todos los trabajadores
-  Future<List<TrabajadorGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/trabajadores');
-    return (response as List)
-        .map((json) => TrabajadorGetDTO.fromJson(json))
-        .toList();
+  Future<List<StaffMemberGetDTO>> getAllStaffMembers() async {
+    final response = await _apiService.get('/api/staff-members');
+    return (response as List).map((e) => StaffMemberGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener un trabajador por ID
-  Future<TrabajadorGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/trabajadores/$id');
-    return TrabajadorGetDTO.fromJson(response);
+  Future<StaffMemberGetDTO> getStaffMemberById(int id) async {
+    final response = await _apiService.get('/api/staff-members/$id');
+    return StaffMemberGetDTO.fromJson(response);
   }
 
-  // Obtener trabajadores por tipo
-  Future<List<TrabajadorGetDTO>> obtenerPorTipo(TipoTrabajador tipo) async {
-    final response = await _apiService.get(
-      '/api/trabajadores/tipos/${tipo.name}',
-    );
-    return (response as List)
-        .map((json) => TrabajadorGetDTO.fromJson(json))
-        .toList();
+  Future<List<StaffMemberGetDTO>> getStaffMembersByType(String staffType) async {
+    final response = await _apiService.get('/api/staff-members/type/$staffType');
+    return (response as List).map((e) => StaffMemberGetDTO.fromJson(e)).toList();
   }
 
-  // Crear un nuevo trabajador
-  Future<TrabajadorGetDTO> crearTrabajador(TrabajadorPostDTO trabajador) async {
+  Future<StaffMemberGetDTO> createStaffMember(StaffMemberPostDTO staffMemberPostDTO) async {
     final response = await _apiService.post(
-      '/api/trabajadores',
-      trabajador.toJson(),
-      requiresAuth: true,
+      '/api/staff-members',
+      staffMemberPostDTO.toJson(),
     );
-    return TrabajadorGetDTO.fromJson(response);
+    return StaffMemberGetDTO.fromJson(response);
   }
 
-  // Actualizar un trabajador
-  Future<TrabajadorGetDTO> actualizarTrabajador(
-    int id,
-    TrabajadorPutDTO trabajador,
-  ) async {
+  Future<StaffMemberGetDTO> updateStaffMember(int id, StaffMemberPutDTO staffMemberPutDTO) async {
     final response = await _apiService.put(
-      '/api/trabajadores/$id',
-      trabajador.toJson(),
+      '/api/staff-members/$id',
+      staffMemberPutDTO.toJson(),
     );
-    return TrabajadorGetDTO.fromJson(response);
+    return StaffMemberGetDTO.fromJson(response);
+  }
+
+  Future<void> deleteStaffMember(int id) async {
+    await _apiService.delete('/api/staff-members/$id');
+  }
+
+  Future<bool> checkAvailability({
+    required int staffMemberId,
+    required String day,
+    required DateTime startTime,
+    required DateTime endTime,
+  }) async {
+    final response = await _apiService.get(
+      '/api/staff-members/availability?staffMemberId=$staffMemberId&day=$day&startTime=${startTime.toIso8601String()}&endTime=${endTime.toIso8601String()}',
+    );
+    return response as bool;
   }
 }

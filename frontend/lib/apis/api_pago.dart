@@ -1,66 +1,55 @@
-import 'dart:io';
+// payment_controller.dart
 
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/PagoGetDTO.dart';
-import 'package:frontend/models/post/PagoPostDTO.dart';
-import 'package:frontend/models/put/PagoPutDTO.dart';
+import '../models/get/PaymentGetDTO.dart';
+import '../models/post/PaymentPostDTO.dart';
+import '../models/put/PaymentPutDTO.dart';
+import 'api_service.dart';
 
-class ApiPago {
+class PaymentController {
   final ApiService _apiService;
 
-  ApiPago({required ApiService apiService}) : _apiService = apiService;
+  PaymentController({required ApiService apiService}) : _apiService = apiService;
 
-  // Obtener todos los pagos
-  Future<List<PagoGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/pagos');
-    return (response as List).map((json) => PagoGetDTO.fromJson(json)).toList();
+  Future<List<PaymentGetDTO>> getAllPayments() async {
+    final response = await _apiService.get('/api/payments');
+    return (response as List).map((e) => PaymentGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener pago por ID
-  Future<PagoGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/pagos/$id');
-    return PagoGetDTO.fromJson(response);
+  Future<PaymentGetDTO> getPaymentById(int id) async {
+    final response = await _apiService.get('/api/payments/$id');
+    return PaymentGetDTO.fromJson(response);
   }
 
-  // Obtener pago por ID de cliente
-  Future<PagoGetDTO> obtenerPoCliented(int id) async {
-    final response = await _apiService.get('/api/pagos/cliente/$id');
-    return PagoGetDTO.fromJson(response);
+  Future<List<PaymentGetDTO>> getPaymentsByCustomer(int customerId) async {
+    final response = await _apiService.get('/api/payments/customer/$customerId');
+    return (response as List).map((e) => PaymentGetDTO.fromJson(e)).toList();
   }
 
-  // Crear un nuevo pago
-  Future<PagoGetDTO> crearPago(PagoPostDTO pago) async {
-    try {
-      final response = await _apiService.post(
-        '/api/pagos',
-        pago.toJson(),
-        requiresAuth: true,
-      );
-
-      return PagoGetDTO.fromJson(response);
-    } catch (e) {
-      throw HttpException('No se pudo crear el pago: ${e.toString()}');
-    }
+  Future<PaymentGetDTO> createPayment(PaymentPostDTO paymentPostDTO) async {
+    final response = await _apiService.post(
+      '/api/payments',
+      paymentPostDTO.toJson(),
+    );
+    return PaymentGetDTO.fromJson(response);
   }
 
-  // Actualizar un pago
-  Future<PagoGetDTO> actualizarPago(int id, PagoPutDTO pago) async {
-    final response = await _apiService.put('/api/pagos/$id', pago.toJson());
-    return PagoGetDTO.fromJson(response);
+  Future<PaymentGetDTO> updatePayment(int id, PaymentPutDTO paymentPutDTO) async {
+    final response = await _apiService.put(
+      '/api/payments/$id',
+      paymentPutDTO.toJson(),
+    );
+    return PaymentGetDTO.fromJson(response);
   }
 
-  // Eliminar un pago
-  Future<void> eliminarPago(int id) async {
-    await _apiService.delete('/api/pagos/$id');
+  Future<void> deletePayment(int id) async {
+    await _apiService.delete('/api/payments/$id');
   }
 
-  // Marcar pago como completado
-  Future<void> procesarPago(int id) async {
-    await _apiService.patch('/api/pagos/$id/procesar');
+  Future<void> processPayment(int id) async {
+    await _apiService.patch('/api/payments/$id/process');
   }
 
-  // Marcar pago como completado
-  Future<void> cancelarPago(int id) async {
-    await _apiService.patch('/api/pagos/$id/cancelar');
+  Future<void> cancelPayment(int id) async {
+    await _apiService.patch('/api/payments/$id/cancel');
   }
 }

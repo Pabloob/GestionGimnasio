@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
+import 'package:frontend/models/get/FitnessClassGetDTO.dart';
+import 'package:frontend/models/get/ScheduleGetDTO.dart';
 import 'package:frontend/providers/horario_provider.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/get/HorarioGetDTO.dart';
 
 class AddClaseCard extends ConsumerStatefulWidget {
-  final ClaseGetDTO clase;
+  final FitnessClassGetDTO clase;
   final bool isSelected;
   final VoidCallback onToggle;
 
@@ -50,7 +50,7 @@ class _AddClaseCardState extends ConsumerState<AddClaseCard> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    widget.clase.nombre,
+                    widget.clase.name,
                     style: AppTheme.cardTitleStyle,
                   ),
                 ),
@@ -96,7 +96,7 @@ class _AddClaseCardState extends ConsumerState<AddClaseCard> {
                             padding: const EdgeInsets.only(right: 8),
                             child: ChoiceChip(
                               label: Text(
-                                horariosList[index].diaSemana.name,
+                                horariosList[index].dayOfWeek.name,
                                 style: TextStyle(
                                   color: selectedDayIndex == index
                                       ? Colors.white
@@ -130,15 +130,15 @@ class _AddClaseCardState extends ConsumerState<AddClaseCard> {
     );
   }
 
-  Widget _buildHorarioInfo(HorarioGetDTO horario) {
+  Widget _buildHorarioInfo(ScheduleGetDTO horario) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInfoRow('Horario', '${_formatTime(horario.horaInicio)} - ${_formatTime(horario.horaFin)}'),
+        _buildInfoRow('Horario', '${_formatTime(horario.startTime)} - ${_formatTime(horario.endTime)}'),
         const SizedBox(height: 4),
-        _buildInfoRow('Sala', horario.sala.nombre),
+        _buildInfoRow('Sala', horario.room.name),
         const SizedBox(height: 4),
-        _buildInfoRow('Entrenador', horario.instructor.usuario.nombre),
+        _buildInfoRow('Entrenador', horario.instructor.user.name),
       ],
     );
   }

@@ -4,10 +4,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class InscripcionGetDTO {
+public class EnrollmentGetDTO {
     private Long id;
-    private ClienteGetDTO cliente;
-    private ClaseGetDTO clase;
-    private LocalDate fechaRegistro;
-    private boolean asistio;
+    private CustomerGetDTO customer;
+    private FitnessClassGetDTO fitnessClass;
+    private LocalDate registrationDate;
+    private boolean attended;
 }

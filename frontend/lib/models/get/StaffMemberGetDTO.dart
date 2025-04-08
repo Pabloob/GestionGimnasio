@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 
 import '../enums.dart';
 import 'UserGetDTO.dart';
@@ -5,8 +6,8 @@ import 'UserGetDTO.dart';
 class StaffMemberGetDTO {
   final UserGetDTO user;
   final String address;
-  final DateTime startTime;
-  final DateTime endTime;
+  final TimeOfDay  startTime;
+  final TimeOfDay  endTime;
   final StaffType staffType;
 
   StaffMemberGetDTO({
@@ -21,8 +22,12 @@ class StaffMemberGetDTO {
     return StaffMemberGetDTO(
       user: UserGetDTO.fromJson(json['user']),
       address: json['address'],
-      startTime: DateTime.parse(json['startTime']),
-      endTime: DateTime.parse(json['endTime']),
+      startTime: TimeOfDay.fromDateTime(
+        DateTime.parse("1970-01-01T${json['startTime']}"),
+      ),
+      endTime: TimeOfDay.fromDateTime(
+        DateTime.parse("1970-01-01T${json['endTime']}"),
+      ),
       staffType: StaffType.values.firstWhere((e) => e.name == json['staffType']),
     );
   }
@@ -31,9 +36,15 @@ class StaffMemberGetDTO {
     return {
       'user': user.toJson(),
       'address': address,
-      'startTime': startTime.toIso8601String(),
-      'endTime': endTime.toIso8601String(),
+      'startTime':
+      "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}",
+      'endTime':
+      "${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}",
       'staffType': staffType.name,
     };
+  }
+
+  String getSchedule() {
+    return "Schedule: ${startTime.hour}:${startTime.minute} - ${endTime.hour}:${endTime.minute}";
   }
 }

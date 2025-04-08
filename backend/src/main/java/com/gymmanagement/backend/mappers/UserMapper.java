@@ -12,14 +12,13 @@ import com.gymmanagement.backend.model.User;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    // Update Entity from PUT DTO
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "registrationDate", ignore = true)
     @Mapping(target = "userType", ignore = true)
     @Mapping(target = "birthDate", ignore = true)
-    @Named("fromUserPutDTO")
-    void fromUserPutDTO(UserPutDTO dto, @MappingTarget User entity);
+    @Named("updateUserEntityFromPutDto")
+    void updateUserEntityFromPutDto(UserPutDTO dto, @MappingTarget User entity);
 
-    @Named("toUserGetDTO")
-    UserGetDTO toUserGetDTO(User entity);
+    @Named("mapUserEntityToGetDto")
+    UserGetDTO mapUserEntityToGetDto(User entity);
 }

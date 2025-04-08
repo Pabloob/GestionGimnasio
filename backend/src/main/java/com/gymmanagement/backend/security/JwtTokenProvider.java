@@ -1,4 +1,4 @@
-package com.gestiongimnasio.backend.security;
+package com.gymmanagement.backend.security;
 
 import java.security.Key;
 import java.util.Date;

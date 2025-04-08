@@ -1,56 +1,42 @@
-import 'dart:io';
+// customer_controller.dart
+import '../models/get/CustomerGetDTO.dart';
+import '../models/post/CustomerPostDTO.dart';
+import '../models/put/CustomerPutDTO.dart';
+import 'api_service.dart';
 
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/ClienteGetDTO.dart';
-import 'package:frontend/models/post/ClientePostDTO.dart';
-import 'package:frontend/models/put/ClientePutDTO.dart';
-
-class ApiCliente {
+class CustomerController {
   final ApiService _apiService;
 
-  ApiCliente({required ApiService apiService}) : _apiService = apiService;
+  CustomerController({required ApiService apiService}) : _apiService = apiService;
 
-  // Obtener todos los clientes
-  Future<List<ClienteGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/clientes');
-    return (response as List)
-        .map((json) => ClienteGetDTO.fromJson(json))
-        .toList();
+  Future<List<CustomerGetDTO>> getAllCustomers() async {
+    final response = await _apiService.get('/api/customers');
+    return (response as List).map((e) => CustomerGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener un cliente por ID
-  Future<ClienteGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/clientes/$id');
-    return ClienteGetDTO.fromJson(response);
+  Future<CustomerGetDTO> getCustomerById(int id) async {
+    final response = await _apiService.get('/api/customers/$id');
+    return CustomerGetDTO.fromJson(response);
   }
 
-  // Crear un nuevo cliente
-  Future<ClienteGetDTO> crearCliente(ClientePostDTO clientePostDTO) async {
-    try {
-
-      final response = await _apiService.post(
-        '/api/clientes',
-        clientePostDTO.toJson(),
-        requiresAuth: false,
-      );
-
-      return ClienteGetDTO.fromJson(response);
-    } catch (e) {
-      throw HttpException('No se pudo crear el cliente: ${e.toString()}');
-    }
-  }
-
-  // Actualizar un cliente
-  Future<ClienteGetDTO> actualizarCliente(int id, ClientePutDTO cliente) async {
-    final response = await _apiService.put(
-      '/api/clientes/$id',
-      cliente.toJson(),
+  Future<CustomerGetDTO> createCustomer(CustomerPostDTO customerPostDTO) async {
+    final response = await _apiService.post(
+      '/api/customers',
+      customerPostDTO.toJson(),
+      requiresAuth: false
     );
-    return ClienteGetDTO.fromJson(response);
+    return CustomerGetDTO.fromJson(response);
   }
 
-  // Incrementar inasistencias de un cliente
-  Future<void> borrarCliente(int id) async {
-    await _apiService.delete('/api/clientes/$id');
+  Future<CustomerGetDTO> updateCustomer(int id, CustomerPutDTO customerPutDTO) async {
+    final response = await _apiService.put(
+      '/api/customers/$id',
+      customerPutDTO.toJson(),
+    );
+    return CustomerGetDTO.fromJson(response);
+  }
+
+  Future<void> deleteCustomer(int id) async {
+    await _apiService.delete('/api/customers/$id');
   }
 }

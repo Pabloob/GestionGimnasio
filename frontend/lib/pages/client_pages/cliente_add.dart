@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/models/post/InscripcionPostDTO.dart';
-import 'package:frontend/models/post/PagoPostDTO.dart';
+import 'package:frontend/models/get/FitnessClassGetDTO.dart';
+import 'package:frontend/models/post/PaymentPostDTO.dart';
 import 'package:frontend/pages/components/add_clase_card.dart';
 import 'package:frontend/providers/cliente_providers.dart';
 import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/providers/inscripcion_provider.dart';
-import 'package:frontend/providers/pago_provider.dart';
 
+import '../../models/post/EnrollmentPostDTO.dart';
 import '../components/common_widgets.dart';
 
 class ClientAddClassPage extends ConsumerWidget {
@@ -30,7 +28,7 @@ class ClientAddClassPage extends ConsumerWidget {
             child: Column(
               children: [
                 CommonWidgets.buildCustomTopMesage(
-                  user: user.usuario,
+                  user: user.user,
                   textoPrincipal: "Clases disponibles",
                   textoSecundario: "Inscríbete a nuevas clases",
                 ),
@@ -82,7 +80,7 @@ class ClientAddClassPage extends ConsumerWidget {
     );
   }
 
-  void _toggleClassSelection(WidgetRef ref, ClaseGetDTO clase) {
+  void _toggleClassSelection(WidgetRef ref, FitnessClassGetDTO clase) {
     ref.read(clienteSelectedClasesProvider.notifier).update((state) {
       return state.contains(clase)
           ? state.where((c) => c != clase).toList()
@@ -106,8 +104,8 @@ class ClientAddClassPage extends ConsumerWidget {
                   const SizedBox(height: 16),
                   ...selectedClasses.map(
                     (clase) => ListTile(
-                      title: Text(clase.nombre),
-                      trailing: Text("${clase.precio} €"),
+                      title: Text(clase.name),
+                      trailing: Text("${clase.price} €"),
                     ),
                   ),
                   const Divider(),
@@ -117,7 +115,7 @@ class ClientAddClassPage extends ConsumerWidget {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     trailing: Text(
-                      "${selectedClasses.fold(0.0, (sum, c) => sum + (c.precio))} €",
+                      "${selectedClasses.fold(0.0, (sum, c) => sum + (c.price))} €",
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -143,31 +141,31 @@ class ClientAddClassPage extends ConsumerWidget {
   Future<void> _handleEnrollment(BuildContext context, WidgetRef ref) async {
     final selectedClasses = ref.read(clienteSelectedClasesProvider);
 
-    final userId = (await ref.read(userProvider.future)).usuario.id;
+    final userId = (await ref.read(userProvider.future)).user.id;
 
     try {
       double totalPrice = 0.0;
       for (final clase in selectedClasses) {
-        totalPrice += clase.precio;
+        totalPrice += clase.price;
       }
 
       for (final clase in selectedClasses) {
-        await ref.read(
-          registerInscripcionProvider(
-            InscripcionPostDTO(
-              clienteId: userId,
-              claseId: clase.id,
-              asistio: false,
-            ),
-          ).future,
-        );
+        await ref
+            .read(inscripcionServiceProvider)
+            .createEnrollment(
+              EnrollmentPostDTO(
+                customerId: userId,
+                classId: clase.id,
+                attended: false,
+              ),
+            );
       }
 
-      await ref.read(
-        registerPagoProvider(
-          PagoPostDTO(clienteId: userId, monto: totalPrice, pagado: false),
-        ).future,
-      );
+      await ref
+          .read(pagoServiceProvider)
+          .createPayment(
+            PaymentPostDTO(customerId: userId, amount: totalPrice, paid: false),
+          );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

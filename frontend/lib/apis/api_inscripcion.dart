@@ -1,81 +1,66 @@
-import 'dart:io';
+// enrollment_controller.dart
 
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/InscripcionGetDTO.dart';
-import 'package:frontend/models/post/InscripcionPostDTO.dart';
-import 'package:frontend/models/put/InscripcionPutDTO.dart';
+import '../models/get/EnrollmentGetDTO.dart';
+import '../models/post/EnrollmentPostDTO.dart';
+import '../models/put/EnrollmentPutDTO.dart';
+import 'api_service.dart';
 
-class ApiInscripcion {
+class EnrollmentController {
   final ApiService _apiService;
 
-  ApiInscripcion({required ApiService apiService}) : _apiService = apiService;
+  EnrollmentController({required ApiService apiService})
+    : _apiService = apiService;
 
-  // Obtener todas las inscripciones
-  Future<List<InscripcionGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/inscripciones');
-    return (response as List)
-        .map((json) => InscripcionGetDTO.fromJson(json))
-        .toList();
+  Future<List<EnrollmentGetDTO>> getAllEnrollments() async {
+    final response = await _apiService.get('/api/enrollments');
+    return (response as List).map((e) => EnrollmentGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener una inscripcion por ID
-  Future<InscripcionGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/inscripciones/$id');
-    return InscripcionGetDTO.fromJson(response);
+  Future<EnrollmentGetDTO> getEnrollmentById(int id) async {
+    final response = await _apiService.get('/api/enrollments/$id');
+    return EnrollmentGetDTO.fromJson(response);
   }
 
-  // Obtener inscripciones por cliente
-  Future<List<InscripcionGetDTO>> obtenerPorCliente(int id) async {
-    final response = await _apiService.get('/api/inscripciones/cliente/$id');
-    return (response as List)
-        .map((json) => InscripcionGetDTO.fromJson(json))
-        .toList();
-  }
-
-  // Obtener inscripciones por clase
-  Future<List<InscripcionGetDTO>> obtenerPorClase(int id) async {
-    final response = await _apiService.get('/api/inscripciones/clase/$id');
-    return (response as List)
-        .map((json) => InscripcionGetDTO.fromJson(json))
-        .toList();
-  }
-
-  // Crear una nueva inscripcion
-  Future<InscripcionGetDTO> crearInscripcion(
-    InscripcionPostDTO inscripcion,
+  Future<List<EnrollmentGetDTO>> getEnrollmentsByCustomer(
+    int customerId,
   ) async {
-    try {
-      final response = await _apiService.post(
-        '/api/inscripciones',
-        inscripcion.toJson(),
-        requiresAuth: true,
-      );
-
-      return InscripcionGetDTO.fromJson(response);
-    } catch (e) {
-      throw HttpException('No se pudo crear la inscripcion: ${e.toString()}');
-    }
+    final response = await _apiService.get(
+      '/api/enrollments/customer/$customerId',
+    );
+    return (response as List).map((e) => EnrollmentGetDTO.fromJson(e)).toList();
   }
 
-  // Actualizar una inscripcion
-  Future<InscripcionGetDTO> actualizarInscripcion(
+  Future<List<EnrollmentGetDTO>> getEnrollmentsByClass(int classId) async {
+    final response = await _apiService.get('/api/enrollments/class/$classId');
+    return (response as List).map((e) => EnrollmentGetDTO.fromJson(e)).toList();
+  }
+
+  Future<EnrollmentGetDTO> createEnrollment(
+    EnrollmentPostDTO enrollmentPostDTO,
+  ) async {
+    final response = await _apiService.post(
+      '/api/enrollments',
+      enrollmentPostDTO.toJson(),
+    );
+    return EnrollmentGetDTO.fromJson(response);
+  }
+
+  Future<EnrollmentGetDTO> updateEnrollment(
     int id,
-    InscripcionPutDTO inscripcion,
+    EnrollmentPutDTO enrollmentPutDTO,
   ) async {
     final response = await _apiService.put(
-      '/api/inscripciones/$id',
-      inscripcion.toJson(),
+      '/api/enrollments/$id',
+      enrollmentPutDTO.toJson(),
     );
-    return InscripcionGetDTO.fromJson(response);
+    return EnrollmentGetDTO.fromJson(response);
   }
 
-  // Eliminar una inscripcion
-  Future<void> eliminarInscripcion(int id) async {
-    await _apiService.delete('/api/inscripciones/$id');
+  Future<void> deleteEnrollment(int id) async {
+    await _apiService.delete('/api/enrollments/$id');
   }
 
-  // Confirmar asistencia
-  Future<void> registrarAsistencia(int id) async {
-    await _apiService.patch('/api/inscripciones/$id/registrar-asistencia');
+  Future<void> registerAttendance(int id) async {
+    await _apiService.patch('/api/enrollments/$id/register-attendance');
   }
 }

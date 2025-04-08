@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/pages/components/common_widgets.dart';
-import 'package:frontend/providers/usuario_provider.dart';
+import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../models/Login.dart';
+import '../../models/UserLoginDTO.dart';
+import '../../utils/authService.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -214,14 +215,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     try {
-      final response = await ref.read(
-        loginProvider(
-          UsuarioLoginDTO(
-            correo: _emailController.text.trim(),
-            contrasena: _passwordController.text.trim(),
-          ),
-        ).future,
-      );
+      final response = await ref
+          .read(usuarioServiceProvider)
+          .login(
+            UserLoginDTO(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            ),
+          );
 
       if (_rememberMe) {
         final prefs = await SharedPreferences.getInstance();
@@ -234,7 +235,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await _processLoginResponse(response);
     } catch (e) {
       setState(() {
-        _errorMessage = _getErrorMessage(e);
+        _errorMessage = getErrorMessage(e);
       });
     } finally {
       if (mounted) {
@@ -254,16 +255,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // Guardar sesión y navegar
     await authService.saveSession(token, user);
     if (mounted) await authService.navegarSegunRol(role, context);
-  }
-
-  String _getErrorMessage(dynamic error) {
-    if (error.toString().contains('socket') ||
-        error.toString().contains('connection')) {
-      return 'Error de conexión. Verifica tu internet';
-    } else if (error.toString().contains('401')) {
-      return 'Correo o contraseña incorrectos';
-    }
-    return 'Error al iniciar sesión. Intenta nuevamente';
   }
 
   void _showForgotPasswordDialog() {

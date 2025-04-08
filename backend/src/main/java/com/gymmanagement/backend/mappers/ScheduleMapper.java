@@ -16,7 +16,7 @@ public interface ScheduleMapper {
     @Mapping(target = "fitnessClass", ignore = true)
     @Mapping(target = "room", ignore = true)
     @Mapping(target = "instructor", ignore = true)
-    @Mapping(target = "startDates", source = "startDates")
+    @Mapping(target = "startDate", source = "startDate")
     @Mapping(target = "endDate", source = "endDate")
     @Named("mapPostDtoToScheduleEntity")
     Schedule mapPostDtoToScheduleEntity(SchedulePostDTO dto);
@@ -25,14 +25,14 @@ public interface ScheduleMapper {
     @Mapping(target = "fitnessClass", ignore = true)
     @Mapping(target = "room", ignore = true)
     @Mapping(target = "instructor", ignore = true)
-    @Mapping(target = "startDates", source = "startDates")
+    @Mapping(target = "startDate", source = "startDate")
     @Mapping(target = "endDate", source = "endDate")
     @Named("updateScheduleEntityFromPutDto")
     void updateScheduleEntityFromPutDto(SchedulePutDTO dto, @MappingTarget Schedule entity);
 
     @Mapping(target = "fitnessClass", source = "fitnessClass", qualifiedByName = "mapFitnessClassEntityToGetDto")
     @Mapping(target = "room", source = "room", qualifiedByName = "mapRoomEntityToGetDto")
-    @Mapping(target = "instructor", source = "instructor", qualifiedByName = "mapStaffMemberEntityToGetDto")
+    @Mapping(target = "instructor", source = "instructor", qualifiedByName = "mapStaffEntityToGetDto")
     @Named("mapScheduleEntityToGetDto")
     ScheduleGetDTO mapScheduleEntityToGetDto(Schedule entity);
 }

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:frontend/pages/client_pages/client_home.dart';
 import 'package:frontend/pages/client_pages/cliente_add.dart';
 import 'package:frontend/pages/client_pages/cliente_profile.dart';
-import 'package:frontend/utils/utils.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:frontend/theme/app_theme.dart';
+
+import '../../utils/authService.dart';
 
 class ClientMainScreen extends StatefulWidget {
   const ClientMainScreen({super.key});

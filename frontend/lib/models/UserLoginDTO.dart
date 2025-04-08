@@ -1,19 +1,23 @@
-class UsuarioLoginDTO {
-  final String correo;
-  final String contrasena;
+class UserLoginDTO {
+  final String email;
+  final String password;
 
-  UsuarioLoginDTO({required this.correo, required this.contrasena});
+  UserLoginDTO({
+    required this.email,
+    required this.password,
+  });
 
-  // Factory para crear una instancia desde JSON
-  factory UsuarioLoginDTO.fromJson(Map<String, dynamic> json) {
-    return UsuarioLoginDTO(
-      correo: json['correo'],
-      contrasena: json['contrasena'],
+  factory UserLoginDTO.fromJson(Map<String, dynamic> json) {
+    return UserLoginDTO(
+      email: json['email'],
+      password: json['password'],
     );
   }
 
-  // Método para convertir el objeto a JSON
   Map<String, dynamic> toJson() {
-    return {'correo': correo, 'contrasena': contrasena};
+    return {
+      'email': email,
+      'password': password,
+    };
   }
 }

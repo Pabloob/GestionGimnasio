@@ -1,53 +1,42 @@
-import 'dart:io';
-
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/SalaGetDTO.dart';
-import 'package:frontend/models/post/SalaPostDTO.dart';
+// room_controller.dart
 import 'package:frontend/models/put/SalaPutDTO.dart';
 
-class ApiSala {
+import '../models/get/RoomGetDTO.dart';
+import '../models/post/RoomPostDTO.dart';
+import 'api_service.dart';
+
+class RoomController {
   final ApiService _apiService;
 
-  ApiSala({required ApiService apiService}) : _apiService = apiService;
+  RoomController({required ApiService apiService}) : _apiService = apiService;
 
-  // Obtener todas las salas
-  Future<List<SalaGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/salas');
-    return (response as List)
-        .map((json) => SalaGetDTO.fromJson(json))
-        .toList();
+  Future<List<RoomGetDTO>> getAllRooms() async {
+    final response = await _apiService.get('/api/rooms');
+    return (response as List).map((e) => RoomGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener una sala por ID
-  Future<SalaGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/salas/$id');
-    return SalaGetDTO.fromJson(response);
+  Future<RoomGetDTO> getRoomById(int id) async {
+    final response = await _apiService.get('/api/rooms/$id');
+    return RoomGetDTO.fromJson(response);
   }
 
-  // Crear una nueva sala
-  Future<SalaGetDTO> crearSala(SalaPostDTO sala) async {
-    try {
-      final response = await _apiService.post(
-        '/api/salas',
-        sala.toJson(),
-        requiresAuth: true,
-      );
-
-      return SalaGetDTO.fromJson(response);
-    } catch (e) {
-      throw HttpException('No se pudo crear la sala: ${e.toString()}');
-    }
+  Future<RoomGetDTO> createRoom(RoomPostDTO roomPostDTO) async {
+    final response = await _apiService.post(
+      '/api/rooms',
+      roomPostDTO.toJson(),
+    );
+    return RoomGetDTO.fromJson(response);
   }
 
-  // Actualizar una sala
-  Future<SalaGetDTO> actualizarSala(int id, SalaPutDTO sala) async {
-    final response = await _apiService.put('/api/salas/$id', sala.toJson());
-    return SalaGetDTO.fromJson(response);
+  Future<RoomGetDTO> updateRoom(int id, RoomPutDTO roomPutDTO) async {
+    final response = await _apiService.put(
+      '/api/rooms/$id',
+      roomPutDTO.toJson(),
+    );
+    return RoomGetDTO.fromJson(response);
   }
 
-  //Borrar sala
-  Future<void> borrarSala(int id) async {
-    await _apiService.delete('/api/salas/$id');
+  Future<void> deleteRoom(int id) async {
+    await _apiService.delete('/api/rooms/$id');
   }
-
 }

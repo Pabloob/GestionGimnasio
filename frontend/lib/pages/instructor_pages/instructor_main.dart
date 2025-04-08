@@ -4,6 +4,8 @@ import 'package:frontend/theme/app_theme.dart';
 import 'package:frontend/utils/utils.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
+import '../../utils/authService.dart';
+
 class InstructorMainScreen extends StatefulWidget {
   const InstructorMainScreen({super.key});
 

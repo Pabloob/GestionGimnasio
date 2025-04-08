@@ -4,7 +4,7 @@ import lombok.Data;
 
 
 @Data
-public class SalaGetDTO {
+public class RoomGetDTO {
     private Long id;
-    private String nombre;
+    private String name;
 }

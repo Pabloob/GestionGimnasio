@@ -1,9 +1,9 @@
-package com.gestiongimnasio.backend.security;
+package com.gymmanagement.backend.security;
 
-import com.gestiongimnasio.backend.model.Cliente;
-import com.gestiongimnasio.backend.model.Trabajador;
-import com.gestiongimnasio.backend.repository.ClienteRepository;
-import com.gestiongimnasio.backend.repository.TrabajadorRepository;
+import com.gymmanagement.backend.model.Customer;
+import com.gymmanagement.backend.model.StaffMember;
+import com.gymmanagement.backend.repository.CustomerRepository;
+import com.gymmanagement.backend.repository.StaffMemberRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -20,49 +20,49 @@ import java.util.Optional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private static final String ROLE_PREFIX = "ROLE_";
-    private static final String CLIENTE_ROLE = "CLIENTE";
+    private static final String CUSTOMER_ROLE = "CUSTOMER";
 
-    private final TrabajadorRepository trabajadorRepository;
-    private final ClienteRepository clienteRepository;
+    private final StaffMemberRepository staffMemberRepository;
+    private final CustomerRepository customerRepository;
 
-    public CustomUserDetailsService(TrabajadorRepository trabajadorRepository,
-                                    ClienteRepository clienteRepository) {
-        this.trabajadorRepository = trabajadorRepository;
-        this.clienteRepository = clienteRepository;
+    public CustomUserDetailsService(StaffMemberRepository staffMemberRepository,
+                                    CustomerRepository customerRepository) {
+        this.staffMemberRepository = staffMemberRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        Optional<Trabajador> trabajadorOpt = trabajadorRepository.findByCorreo(correo);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<StaffMember> staffOpt = staffMemberRepository.findByEmail(email);
 
-        if (trabajadorOpt.isPresent()) {
-            Trabajador trabajador = trabajadorOpt.get();
+        if (staffOpt.isPresent()) {
+            StaffMember staff = staffOpt.get();
             return buildUserDetails(
-                    trabajador.getCorreo(),
-                    trabajador.getContrasena(),
-                    getTrabajadorAuthorities(trabajador)
+                    staff.getEmail(),
+                    staff.getPassword(),
+                    getStaffAuthorities(staff)
             );
         }
 
-        Cliente cliente = clienteRepository.findByCorreo(correo)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con correo: " + correo));
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         return buildUserDetails(
-                cliente.getCorreo(),
-                cliente.getContrasena(),
-                getClienteAuthorities()
+                customer.getEmail(),
+                customer.getPassword(),
+                getCustomerAuthorities()
         );
     }
 
-    private Collection<? extends GrantedAuthority> getTrabajadorAuthorities(Trabajador trabajador) {
-        String role = trabajador.getTipoTrabajador() != null ?
-                trabajador.getTipoTrabajador().name() :
-                "TRABAJADOR";
+    private Collection<? extends GrantedAuthority> getStaffAuthorities(StaffMember staff) {
+        String role = staff.getStaffType() != null ?
+                staff.getStaffType().name() :
+                "STAFF";
         return Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + role));
     }
 
-    private Collection<? extends GrantedAuthority> getClienteAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + CLIENTE_ROLE));
+    private Collection<? extends GrantedAuthority> getCustomerAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority(ROLE_PREFIX + CUSTOMER_ROLE));
     }
 
     private UserDetails buildUserDetails(String username, String password,

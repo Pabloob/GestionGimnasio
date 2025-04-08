@@ -1,8 +1,8 @@
-// Ejemplo para add_clase.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/post/ClasePostDTO.dart';
+import 'package:frontend/models/post/FitnessClassPostDTO.dart';
 import 'package:frontend/providers/clase_provider.dart';
+import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/theme/app_theme.dart';
 
 import '../components/common_widgets.dart';
@@ -93,15 +93,15 @@ class _AddClaseFormState extends ConsumerState<AddClaseForm> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      final nuevaClase = ClasePostDTO(
-        nombre: _nombreController.text,
-        capacidadMaxima: int.parse(_capacidadController.text),
-        precio: double.parse(_precioController.text),
-        descripcion: _descripcionController.text,
-        activa: true,
+      final nuevaClase = FitnessClassPostDTO(
+        name: _nombreController.text,
+        maxCapacity: int.parse(_capacidadController.text),
+        price: double.parse(_precioController.text),
+        description: _descripcionController.text,
+        active: true,
       );
 
-      await ref.read(registerClaseProvider(nuevaClase).future);
+      await ref.read(claseServiceProvider).createClass(nuevaClase);
 
       if (mounted) {
         ref.invalidate(AllClassesProvider);

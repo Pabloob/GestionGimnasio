@@ -8,13 +8,13 @@ import com.gymmanagement.backend.model.User;
 import lombok.Data;
 
 @Data
-public class UsuarioGetDTO {
+public class UserGetDTO {
     private Long id;
-    private String nombre;
-    private String correo;
-    private String telefono;
-    private LocalDate fechaNacimiento;
-    private LocalDateTime fechaRegistro;
-    private User.TipoUsuario tipoUsuario;
-    private boolean activo;
+    private String name;
+    private String email;
+    private String phone;
+    private LocalDate birthDate;
+    private LocalDateTime registrationDate;
+    private User.UserType userType;
+    private boolean active;
 }

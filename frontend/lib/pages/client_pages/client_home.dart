@@ -19,60 +19,60 @@ class ClientHomePage extends ConsumerWidget {
       error: (error, _) => Center(child: Text("Error: $error")),
       data:
           (user) => SingleChildScrollView(
-            child: Column(
-              children: [
-                CommonWidgets.buildCustomTopMesage(
-                  user: user.usuario,
-                  textoPrincipal: "Bienvenido",
-                  textoSecundario: "¿Listo para entrenar?",
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Tus clases",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      classesAsync.when(
-                        loading:
-                            () => const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                        error:
-                            (error, _) => Center(child: Text('Error: $error')),
-                        data:
-                            (classes) =>
-                                classes.isEmpty
-                                    ? const Center(
-                                      child: Text(
-                                        'No estás inscrito en ninguna clase.',
-                                      ),
-                                    )
-                                    : ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: classes.length,
-                                      itemBuilder:
-                                          (context, index) => ClassCard(
-                                            clase: classes[index].clase,
-                                            isEnrolled: true,
-                                            ref: ref,
-                                          ),
-                                    ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+        child: Column(
+          children: [
+            CommonWidgets.buildCustomTopMesage(
+              user: user.user,
+              textoPrincipal: "Bienvenido",
+              textoSecundario: "¿Listo para entrenar?",
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Tus clases",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  classesAsync.when(
+                    loading:
+                        () => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    error:
+                        (error, _) => Center(child: Text('Error: $error')),
+                    data:
+                        (classes) =>
+                    classes.isEmpty
+                        ? const Center(
+                      child: Text(
+                        'No estás inscrito en ninguna clase.',
+                      ),
+                    )
+                        : ListView.builder(
+                      shrinkWrap: true,
+                      physics:
+                      const NeverScrollableScrollPhysics(),
+                      itemCount: classes.length,
+                      itemBuilder:
+                          (context, index) => ClassCard(
+                        clase: classes[index].fitnessClass,
+                        isEnrolled: true,
+                        ref: ref,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

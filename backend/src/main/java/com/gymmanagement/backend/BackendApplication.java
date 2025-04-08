@@ -1,4 +1,4 @@
-package com.gestiongimnasio.backend;
+package com.gymmanagement.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

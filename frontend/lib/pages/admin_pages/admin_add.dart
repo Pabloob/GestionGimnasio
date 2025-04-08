@@ -72,7 +72,7 @@ class _AdminAddPageState extends ConsumerState<AdminAddPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CommonWidgets.buildCustomTopMesage(
-                    user: user.usuario,
+                    user: user.user,
                     textoPrincipal: currentSection.formTitle,
                   ),
 

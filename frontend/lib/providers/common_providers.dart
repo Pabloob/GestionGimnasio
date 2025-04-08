@@ -8,12 +8,24 @@ import 'package:frontend/apis/api_sala.dart';
 import 'package:frontend/apis/api_service.dart';
 import 'package:frontend/apis/api_trabajador.dart';
 import 'package:frontend/apis/api_usuario.dart';
-import 'package:frontend/utils/utils.dart';
+
+import '../utils/authService.dart';
 
 final userProvider = FutureProvider.autoDispose<dynamic>((ref) async {
   final authService = AuthService();
   try {
     final user = await authService.getSavedUser();
+    return user;
+  } catch (e) {
+    throw Exception('Error al cargar usuario: ${e.toString()}');
+  }
+});
+
+
+final userIdProvider = FutureProvider.autoDispose<dynamic>((ref) async {
+  final authService = AuthService();
+  try {
+    final user = await authService.getUserId();
     return user;
   } catch (e) {
     throw Exception('Error al cargar usuario: ${e.toString()}');
@@ -26,41 +38,41 @@ final apiServiceProvider = Provider<ApiService>((ref) {
 });
 
 // Proveedor para ApiClase
-final claseServiceProvider = Provider<ApiClase>((ref) {
-  return ApiClase(apiService: ref.watch(apiServiceProvider));
+final claseServiceProvider = Provider<FitnessClassController>((ref) {
+  return FitnessClassController(apiService: ref.watch(apiServiceProvider));
 });
 
 // Proveedor para ApiInscripcion
-final inscripcionServiceProvider = Provider<ApiInscripcion>((ref) {
-  return ApiInscripcion(apiService: ref.watch(apiServiceProvider));
+final inscripcionServiceProvider = Provider<EnrollmentController>((ref) {
+  return EnrollmentController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiUsuario
-final usuarioServiceProvider = Provider<ApiUsuario>((ref) {
-  return ApiUsuario(apiService: ref.watch(apiServiceProvider));
+final usuarioServiceProvider = Provider<UserController>((ref) {
+  return UserController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiCliente
-final clienteServiceProvider = Provider<ApiCliente>((ref) {
-  return ApiCliente(apiService: ref.watch(apiServiceProvider));
+final clienteServiceProvider = Provider<CustomerController>((ref) {
+  return CustomerController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiTrabajador
-final trabajadorServiceProvider = Provider<ApiTrabajador>((ref) {
-  return ApiTrabajador(apiService: ref.watch(apiServiceProvider));
+final trabajadorServiceProvider = Provider<StaffMemberController>((ref) {
+  return StaffMemberController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiHorario
-final horarioServiceProvider = Provider<ApiHorario>((ref) {
-  return ApiHorario(apiService: ref.watch(apiServiceProvider));
+final horarioServiceProvider = Provider<ScheduleController>((ref) {
+  return ScheduleController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiSala
-final salaServiceProvider = Provider<ApiSala>((ref) {
-  return ApiSala(apiService: ref.watch(apiServiceProvider));
+final salaServiceProvider = Provider<RoomController>((ref) {
+  return RoomController(apiService: ref.watch(apiServiceProvider));
 });
 
 //Proveedor para ApiPago
-final pagoServiceProvider = Provider<ApiPago>((ref) {
-  return ApiPago(apiService: ref.watch(apiServiceProvider));
+final pagoServiceProvider = Provider<PaymentController>((ref) {
+  return PaymentController(apiService: ref.watch(apiServiceProvider));
 });

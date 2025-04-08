@@ -2,11 +2,13 @@ package com.gymmanagement.backend.service.impl;
 
 import com.gymmanagement.backend.dto.UserLoginDTO;
 import com.gymmanagement.backend.dto.get.UserGetDTO;
-import com.gymmanagement.backend.mappers.UsuarioMapper;
+import com.gymmanagement.backend.mappers.UserMapper;
 import com.gymmanagement.backend.model.User;
 import com.gymmanagement.backend.repository.CustomerRepository;
 import com.gymmanagement.backend.repository.StaffMemberRepository;
 import com.gymmanagement.backend.repository.UserRepository;
+import com.gymmanagement.backend.service.interfaces.CustomerService;
+import com.gymmanagement.backend.service.interfaces.StaffMemberService;
 import com.gymmanagement.backend.service.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,10 +24,10 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final CustomerRepository customerService;
-    private final StaffMemberRepository staffService;
+    private final CustomerService customerService;
+    private final StaffMemberService staffService;
     private final PasswordEncoder passwordEncoder;
-    private final UsuarioMapper userMapper;
+    private final UserMapper userMapper;
 
     @Override
     public Object authenticate(UserLoginDTO loginDTO) {
@@ -46,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
         return switch (user.getUserType()) {
             case CUSTOMER -> customerService.findCustomerById(user.getId());
-            case STAFF -> staffService.findStaffById(user.getId());
+            case STAFF -> staffService.findStaffMemberById(user.getId());
         };
     }
 
@@ -55,7 +57,7 @@ public class UserServiceImpl implements UserService {
     public UserGetDTO findById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-        return userMapper.toUsuarioGetDTO(user);
+        return userMapper.mapUserEntityToGetDto(user);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-        return userMapper.toUsuarioGetDTO(user);
+        return userMapper.mapUserEntityToGetDto(user);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class UserServiceImpl implements UserService {
     public List<UserGetDTO> getAll() {
         return userRepository.findAll()
                 .stream()
-                .map(userMapper::toUsuarioGetDTO)
+                .map(userMapper::mapUserEntityToGetDto)
                 .collect(Collectors.toList());
     }
 
@@ -94,6 +96,5 @@ public class UserServiceImpl implements UserService {
         user.setActive(newStatus);
         userRepository.save(user);
 
-        System.out.println("User status with ID " + id + " has been changed to " + (newStatus ? "active" : "inactive"));
     }
 }

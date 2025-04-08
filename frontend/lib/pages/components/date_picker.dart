@@ -42,8 +42,7 @@ class DatePickerWidget extends StatelessWidget {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(primary: AppTheme.primaryColor),
-            dialogBackgroundColor: Colors.white,
+            colorScheme: ColorScheme.light(primary: AppTheme.primaryColor), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
           ),
           child: child!,
         );

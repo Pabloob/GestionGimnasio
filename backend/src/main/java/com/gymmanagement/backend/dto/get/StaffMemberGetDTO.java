@@ -1,15 +1,15 @@
 package com.gymmanagement.backend.dto.get;
 
-import com.gestiongimnasio.backend.model.Trabajador;
+import com.gymmanagement.backend.model.StaffMember;
 import lombok.Data;
 
 import java.time.LocalTime;
 
 @Data
-public class TrabajadorGetDTO {
-    private UsuarioGetDTO usuario;
-    private String direccion;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
-    private Trabajador.TipoTrabajador tipoTrabajador;
+public class StaffMemberGetDTO {
+    private UserGetDTO user;
+    private String address;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private StaffMember.StaffType staffType;
 }

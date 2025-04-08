@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/pages/about_pages/about_app.dart';
 import 'package:frontend/pages/about_pages/help_and_support.dart';
 import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/utils/utils.dart';
 
 import '../../theme/app_theme.dart';
+import '../../utils/authService.dart';
 import '../components/common_widgets.dart';
 
 class AdminProfilePage extends ConsumerWidget {
@@ -26,7 +26,7 @@ class AdminProfilePage extends ConsumerWidget {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  CommonWidgets.buildCustomTopMesage(user: user.usuario),
+                  CommonWidgets.buildCustomTopMesage(user: user.user),
                   _buildProfileOptions(context),
                   _buildMoreOptions(context),
                 ],

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/post/ClientePostDTO.dart';
+import 'package:frontend/models/post/CustomerPostDTO.dart';
+import 'package:frontend/models/post/UserPostDTO.dart';
 import 'package:frontend/providers/cliente_providers.dart';
 
 import '../../models/enums.dart';
-import '../../models/post/UsuarioPostDTO.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/utils.dart';
 import '../components/common_widgets.dart';
 import '../components/date_picker.dart';
 
@@ -198,16 +199,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           ),
         ),
         child:
-            _isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : const Text(
-                  "Registrarse",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+        _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+          "Registrarse",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -228,7 +229,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (!_formKey.currentState!.validate()) return;
     if (_birthDate == null) {
       setState(
-        () => _errorMessage = 'Por favor selecciona tu fecha de nacimiento',
+            () => _errorMessage = 'Por favor selecciona tu fecha de nacimiento',
       );
       return;
     }
@@ -240,15 +241,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     });
 
     try {
-      final cliente = ClientePostDTO(
-        usuarioPostDTO: UsuarioPostDTO(
-          nombre: _nameController.text.trim(),
-          correo: _emailController.text.trim(),
-          contrasena: _passwordController.text.trim(),
-          telefono: _phoneController.text.trim(),
-          fechaNacimiento: _birthDate!,
-          tipoUsuario: TipoUsuario.CLIENTE,
-          activo: true,
+      final cliente = CustomerPostDTO(
+        user: UserPostDTO(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+          phone: _phoneController.text.trim(),
+          birthDate: _birthDate!,
+          userType: UserType.CUSTOMER,
+          active: true,
         ),
       );
 
@@ -264,7 +265,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         Navigator.pop(context);
       }
     } catch (e) {
-      setState(() => _errorMessage = _getErrorMessage(e));
+      setState(() => _errorMessage = getErrorMessage(e));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -272,13 +273,4 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     }
   }
 
-  String _getErrorMessage(dynamic error) {
-    if (error.toString().contains('socket') ||
-        error.toString().contains('connection')) {
-      return 'Error de conexión. Verifica tu internet';
-    } else if (error.toString().contains('409')) {
-      return 'El correo electrónico ya está registrado';
-    }
-    return 'Error al registrar. Intenta nuevamente';
-  }
 }

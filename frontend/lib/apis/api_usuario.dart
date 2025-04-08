@@ -1,73 +1,62 @@
+// user_controller.dart
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/Login.dart';
-import 'package:frontend/models/get/UsuarioGetDTO.dart';
-import 'package:frontend/models/put/UsuarioPutDTO.dart';
 
-class ApiUsuario {
+import '../models/UserLoginDTO.dart';
+import '../models/get/UserGetDTO.dart';
+import 'api_service.dart';
+
+class UserController {
   final ApiService _apiService;
-
-  ApiUsuario({required ApiService apiService}) : _apiService = apiService;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  Future<Map<String, dynamic>> login(UsuarioLoginDTO usuario) async {
+  UserController({required ApiService apiService}) : _apiService = apiService;
+
+  Future<dynamic> login(UserLoginDTO loginRequest) async {
     try {
       final response = await _apiService.post(
-        '/api/usuarios/login',
-        usuario.toJson(),
+        '/api/users/login',
+        loginRequest.toJson(),
         requiresAuth: false,
       );
+
       if (response.containsKey('token')) {
         await _storage.write(key: 'jwt_token', value: response['token']);
         return response;
       } else {
-        throw HttpException('Error en la autenticación: Token no encontrado.');
+        throw HttpException('Authentication error: Token not found.');
       }
     } catch (e) {
-      throw HttpException('Error en la autenticación: ${e.toString()}');
+      rethrow;
     }
   }
 
-  // Método para logout
+  Future<UserGetDTO> getUserById(int id) async {
+    final response = await _apiService.get('/api/users/$id');
+    return UserGetDTO.fromJson(response);
+  }
+
+  Future<UserGetDTO> getUserByEmail(String email) async {
+    final response = await _apiService.get('/api/users/email/$email');
+    return UserGetDTO.fromJson(response);
+  }
+
+  Future<List<UserGetDTO>> getAllUsers() async {
+    final response = await _apiService.get('/api/users');
+    return (response as List).map((e) => UserGetDTO.fromJson(e)).toList();
+  }
+
+  Future<bool> checkEmailExists(String email) async {
+    final response = await _apiService.get('/api/users/exists/$email');
+    return response as bool;
+  }
+
+  Future<void> toggleUserStatus(int id) async {
+    await _apiService.patch('/api/users/$id/toggle-status');
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
-  }
-
-  Future<List<UsuarioGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/usuarios');
-    return (response as List)
-        .map((json) => UsuarioGetDTO.fromJson(json))
-        .toList();
-  }
-
-  // Obtener un usuario por ID
-  Future<UsuarioGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/usuarios/$id');
-    return UsuarioGetDTO.fromJson(response);
-  }
-
-  // Obtener un usuario por correo
-  Future<UsuarioGetDTO> obtenerPorCorreo(String correo) async {
-    final response = await _apiService.get('/api/usuarios/correo/$correo');
-    return UsuarioGetDTO.fromJson(response);
-  }
-
-  // Verificar si existe un usuario con el correo proporcionado
-  Future<bool> existe(String correo) async {
-    final response = await _apiService.get('/api/usuarios/existe/$correo');
-    return response;
-  }
-
-  // Actualizar un usuario
-  Future<UsuarioGetDTO> actualizarUsuario(int id, UsuarioPutDTO usuario) async {
-    final response = await _apiService.put('/api/usuarios/$id', usuario.toJson());
-    return UsuarioGetDTO.fromJson(response);
-  }
-
-  // Desactivar un usuario
-  Future<void> desactivarUsuario(int id) async {
-    await _apiService.put('/api/usuarios/desactivar/$id', {});
   }
 }

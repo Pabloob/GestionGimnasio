@@ -21,4 +21,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     List<Enrollment> findEnrollmentsByCustomerIdWithClass(@Param("customerId") Long customerId);
 
     boolean existsByEmail(@NotBlank @Email String email);
+
+    Object findCustomerById(Long id);
 }

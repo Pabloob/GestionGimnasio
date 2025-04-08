@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/enums.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/models/get/SalaGetDTO.dart';
-import 'package:frontend/models/get/TrabajadorGetDTO.dart';
-import 'package:frontend/models/post/HorarioPostDTO.dart';
+import 'package:frontend/models/get/FitnessClassGetDTO.dart';
+import 'package:frontend/models/get/RoomGetDTO.dart';
+import 'package:frontend/models/get/StaffMemberGetDTO.dart';
+import 'package:frontend/models/post/SchedulePostDTO.dart';
 import 'package:frontend/providers/clase_provider.dart';
 import 'package:frontend/providers/horario_provider.dart';
 import 'package:frontend/providers/sala_provider.dart';
@@ -27,7 +27,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
   final TextEditingController _horaInicioController = TextEditingController();
   final TextEditingController _horaFinController = TextEditingController();
   final TextEditingController _fechaDeInicioController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _fechaDeFinController = TextEditingController();
 
   DateTime? _selectedFechaInicio;
@@ -35,7 +35,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
 
   final _formKey = GlobalKey<FormState>();
 
-  final Set<DiaSemana> _diasSeleccionados = {};
+  final Set<DayOfWeek> _diasSeleccionados = {};
   int? _salaId;
   int? _instructorId;
   int? _claseId;
@@ -75,10 +75,10 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
   }
 
   Widget _buildFormulario(
-    List<TrabajadorGetDTO> instructores,
-    List<ClaseGetDTO> clases,
-    List<SalaGetDTO> salas,
-  ) {
+      List<StaffMemberGetDTO> instructores,
+      List<FitnessClassGetDTO> clases,
+      List<RoomGetDTO> salas,
+      ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -93,8 +93,8 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
               items: instructores,
               label: "Seleccionar Instructor",
               onChanged: (value) => setState(() => _instructorId = value),
-              itemBuilder: (instructor) => instructor.usuario.nombre,
-              valueBuilder: (instructor) => instructor.usuario.id,
+              itemBuilder: (instructor) => instructor.user.name,
+              valueBuilder: (instructor) => instructor.user.id,
             ),
             const SizedBox(height: 16),
             _buildDropdown(
@@ -102,7 +102,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
               items: clases,
               label: "Seleccionar Clase",
               onChanged: (value) => setState(() => _claseId = value),
-              itemBuilder: (clase) => clase.nombre,
+              itemBuilder: (clase) => clase.name,
               valueBuilder: (clase) => clase.id,
             ),
             const SizedBox(height: 16),
@@ -111,7 +111,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
               items: salas,
               label: "Seleccionar Sala",
               onChanged: (value) => setState(() => _salaId = value),
-              itemBuilder: (sala) => sala.nombre,
+              itemBuilder: (sala) => sala.name,
               valueBuilder: (sala) => sala.id,
             ),
             const SizedBox(height: 16),
@@ -140,7 +140,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
                 setState(() {
                   _selectedFechaInicio = selectedDate;
                   _fechaDeInicioController.text =
-                      "${_selectedFechaInicio!.day}/${_selectedFechaInicio!.month}/${_selectedFechaInicio!.year}";
+                  "${_selectedFechaInicio!.day}/${_selectedFechaInicio!.month}/${_selectedFechaInicio!.year}";
                 });
               },
               future: true,
@@ -153,7 +153,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
                 setState(() {
                   _selectedFechaFin = selectedDate;
                   _fechaDeFinController.text =
-                      "${_selectedFechaFin!.day}/${_selectedFechaFin!.month}/${_selectedFechaFin!.year}";
+                  "${_selectedFechaFin!.day}/${_selectedFechaFin!.month}/${_selectedFechaFin!.year}";
                 });
               },
               future: true,
@@ -207,15 +207,15 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
       ).parse(_fechaDeFinController.text);
 
       for (final dia in _diasSeleccionados) {
-        final nuevoHorario = HorarioPostDTO(
-          claseId: _claseId!,
-          diaSemana: dia,
-          horaInicio: horaInicio,
-          horaFin: horaFin,
-          salaId: _salaId!,
+        final nuevoHorario = SchedulePostDTO(
+          classId: _claseId!,
+          dayOfWeek: dia,
+          startTime: horaInicio,
+          endTime: horaFin,
+          roomId: _salaId!,
           instructorId: _instructorId!,
-          fechasInicio: fechaDeInicio,
-          fechaFin: fechaDeFin,
+          startDate: fechaDeInicio,
+          endDate: fechaDeFin,
         );
         await ref.read(registerHorarioProvider(nuevoHorario).future);
       }
@@ -256,25 +256,25 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
           spacing: 8,
           runSpacing: 8,
           children:
-              DiaSemana.values.map((dia) {
-                final isSelected = _diasSeleccionados.contains(dia);
-                return FilterChip(
-                  label: Text(dia.name),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      selected
-                          ? _diasSeleccionados.add(dia)
-                          : _diasSeleccionados.remove(dia);
-                    });
-                  },
-                  selectedColor: const Color(0xFF7D8C88),
-                  checkmarkColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                  ),
-                );
-              }).toList(),
+          DayOfWeek.values.map((dia) {
+            final isSelected = _diasSeleccionados.contains(dia);
+            return FilterChip(
+              label: Text(dia.name),
+              selected: isSelected,
+              onSelected: (selected) {
+                setState(() {
+                  selected
+                      ? _diasSeleccionados.add(dia)
+                      : _diasSeleccionados.remove(dia);
+                });
+              },
+              selectedColor: const Color(0xFF7D8C88),
+              checkmarkColor: Colors.white,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+            );
+          }).toList(),
         ),
       ],
     );
@@ -302,12 +302,12 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
       value: value,
       isExpanded: true,
       items:
-          items.map((item) {
-            return DropdownMenuItem<int>(
-              value: valueBuilder(item),
-              child: Text(itemBuilder(item)),
-            );
-          }).toList(),
+      items.map((item) {
+        return DropdownMenuItem<int>(
+          value: valueBuilder(item),
+          child: Text(itemBuilder(item)),
+        );
+      }).toList(),
       onChanged: onChanged,
       validator: (value) => value == null ? "Este campo es obligatorio" : null,
     );

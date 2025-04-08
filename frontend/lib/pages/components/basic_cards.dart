@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/models/get/HorarioGetDTO.dart';
-import 'package:frontend/models/get/SalaGetDTO.dart';
-import 'package:frontend/models/get/TrabajadorGetDTO.dart';
+import 'package:frontend/models/get/FitnessClassGetDTO.dart';
+import 'package:frontend/models/get/ScheduleGetDTO.dart';
+import 'package:frontend/models/get/RoomGetDTO.dart';
+import 'package:frontend/models/get/StaffMemberGetDTO.dart';
 import 'package:frontend/theme/app_theme.dart';
 
-Widget buildClassCard(ClaseGetDTO clase) {
+Widget buildClassCard(FitnessClassGetDTO clase) {
   return Card(
     elevation: 2,
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -19,11 +19,11 @@ Widget buildClassCard(ClaseGetDTO clase) {
         child: const Icon(Icons.fitness_center, color: Colors.white),
       ),
       title: Text(
-        clase.nombre,
+        clase.name,
         style: AppTheme.cardTitleStyle,
       ),
       subtitle: Text(
-        '${clase.precio} € - ${clase.capacidadMaxima} personas',
+        '${clase.price} € - ${clase.maxCapacity} personas',
         style: AppTheme.cardSubtitleStyle,
       ),
       trailing: ElevatedButton(
@@ -41,7 +41,7 @@ Widget buildClassCard(ClaseGetDTO clase) {
   );
 }
 
-Widget buildWorkerCard(TrabajadorGetDTO trabajador) {
+Widget buildWorkerCard(StaffMemberGetDTO trabajador) {
   return Card(
     elevation: 2,
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -62,7 +62,7 @@ Widget buildWorkerCard(TrabajadorGetDTO trabajador) {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  trabajador.usuario.nombre,
+                  trabajador.user.name,
                   style: AppTheme.cardTitleStyle,
                 ),
               ),
@@ -80,17 +80,17 @@ Widget buildWorkerCard(TrabajadorGetDTO trabajador) {
             ],
           ),
           const SizedBox(height: 8),
-          _buildInfoRow('Rol', trabajador.tipoTrabajador.name),
-          _buildInfoRow('Correo', trabajador.usuario.correo),
-          _buildInfoRow('Teléfono', trabajador.usuario.telefono),
-          _buildInfoRow('Horario', trabajador.getHorario()),
+          _buildInfoRow('Rol', trabajador.staffType.name),
+          _buildInfoRow('Correo', trabajador.user.email),
+          _buildInfoRow('Teléfono', trabajador.user.phone),
+          _buildInfoRow('Horario', trabajador.getSchedule()),
         ],
       ),
     ),
   );
 }
 
-Widget buildHorarioCard(HorarioGetDTO horario) {
+Widget buildHorarioCard(ScheduleGetDTO horario) {
   return Card(
     elevation: 2,
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -112,14 +112,14 @@ Widget buildHorarioCard(HorarioGetDTO horario) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  horario.clase.nombre,
+                  horario.fitnessClass.name,
                   style: AppTheme.cardTitleStyle,
                 ),
                 const SizedBox(height: 8),
-                _buildInfoRow('Día', horario.diaSemana.name),
+                _buildInfoRow('Día', horario.dayOfWeek.name),
                 _buildInfoRow('Horario', horario.getHoras()),
-                _buildInfoRow('Sala', horario.sala.nombre),
-                _buildInfoRow('Instructor', horario.instructor.usuario.nombre),
+                _buildInfoRow('Sala', horario.room.name),
+                _buildInfoRow('Instructor', horario.instructor.user.name),
               ],
             ),
           ),
@@ -140,7 +140,7 @@ Widget buildHorarioCard(HorarioGetDTO horario) {
   );
 }
 
-Widget buildSalaCard(SalaGetDTO sala) {
+Widget buildSalaCard(RoomGetDTO sala) {
   return Card(
     elevation: 2,
     margin: const EdgeInsets.symmetric(vertical: 8),
@@ -154,7 +154,7 @@ Widget buildSalaCard(SalaGetDTO sala) {
         child: const Icon(Icons.room, color: Colors.white),
       ),
       title: Text(
-        sala.nombre,
+        sala.name,
         style: AppTheme.cardTitleStyle,
       ),
       trailing: ElevatedButton(

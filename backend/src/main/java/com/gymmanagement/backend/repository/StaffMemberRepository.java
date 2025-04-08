@@ -10,9 +10,11 @@ import java.util.Optional;
 @Repository
 public interface StaffMemberRepository extends JpaRepository<StaffMember, Long> {
 
-    List<StaffMember> findByStaffRole(StaffMember.StaffRole staffType);
+    List<StaffMember> findByStaffType(StaffMember.StaffType staffType);
 
     boolean existsByEmail(String email);
 
     Optional<StaffMember> findByEmail(String email);
+
+    Object findStaffById(Long id);
 }

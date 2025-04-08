@@ -4,10 +4,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class PagoGetDTO {
+public class PaymentGetDTO {
     private Long id;
-    private ClienteGetDTO cliente;
-    private Double monto;
-    private LocalDate fechaPago;
-    private boolean pagado;
+    private CustomerGetDTO customer;
+    private Double amount;
+    private LocalDate paymentDate;
+    private boolean paid;
 }

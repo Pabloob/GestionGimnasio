@@ -1,50 +1,41 @@
 package com.gymmanagement.backend.mappers;
 
 import com.gymmanagement.backend.dto.get.CustomerGetDTO;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import com.gymmanagement.backend.dto.post.CustomerPostDTO;
+import com.gymmanagement.backend.dto.put.CustomerPutDTO;
+import com.gymmanagement.backend.model.Customer;
+import org.mapstruct.*;
 
-import com.gymmanagement.backend.dto.post.ClientePostDTO;
-import com.gymmanagement.backend.dto.put.ClientePutDTO;
-import com.gestiongimnasio.backend.model.Cliente;
-
-@Mapper(componentModel = "spring", uses = {UsuarioMapper.class})
-public interface ClienteMapper {
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public interface CustomerMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "nombre", source = "dto.usuarioPostDTO.nombre")
-    @Mapping(target = "contrasena", source = "dto.usuarioPostDTO.contrasena")
-    @Mapping(target = "correo", source = "dto.usuarioPostDTO.correo")
-    @Mapping(target = "telefono", source = "dto.usuarioPostDTO.telefono")
-    @Mapping(target = "fechaNacimiento", source = "dto.usuarioPostDTO.fechaNacimiento")
-    @Mapping(target = "tipoUsuario", source = "dto.usuarioPostDTO.tipoUsuario")
-    @Mapping(target = "activo", source = "dto.usuarioPostDTO.activo")
-    @Mapping(target = "fechaRegistro", ignore=true)
-
-    @Named("fromClientePostDTO")
-    Cliente fromClientePostDTO(ClientePostDTO dto);
+    @Mapping(target = "name", source = "dto.user.name")
+    @Mapping(target = "password", source = "dto.user.password")
+    @Mapping(target = "email", source = "dto.user.email")
+    @Mapping(target = "phone", source = "dto.user.phone")
+    @Mapping(target = "birthDate", source = "dto.user.birthDate")
+    @Mapping(target = "userType", source = "dto.user.userType")
+    @Mapping(target = "active", source = "dto.user.active")
+    @Mapping(target = "registrationDate", ignore = true)
+    @Named("mapPostDtoToCustomerEntity")
+    Customer mapPostDtoToCustomerEntity(CustomerPostDTO dto);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "fechaNacimiento", ignore = true)
-    @Mapping(target = "fechaRegistro", ignore = true)
-    @Mapping(target = "tipoUsuario", ignore = true)
-    @Mapping(source = "usuarioPutDTO.nombre", target = "nombre")
-    @Mapping(source = "usuarioPutDTO.correo", target = "correo")
-    @Mapping(source = "usuarioPutDTO.telefono", target = "telefono")
-    @Mapping(source = "usuarioPutDTO.activo", target = "activo")
+    @Mapping(target = "birthDate", ignore = true)
+    @Mapping(target = "registrationDate", ignore = true)
+    @Mapping(target = "userType", ignore = true)
+    @Mapping(source = "userPutDTO.name", target = "name")
+    @Mapping(source = "userPutDTO.email", target = "email")
+    @Mapping(source = "userPutDTO.phone", target = "phone")
+    @Mapping(source = "userPutDTO.active", target = "active")
+    @Mapping(source = "userPutDTO.password", target = "password")
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Named("updateCustomerEntityFromPutDto")
+    void updateCustomerEntityFromPutDto(CustomerPutDTO dto, @MappingTarget Customer entity);
 
-    @Mapping(target = "contrasena", source = "dto.usuarioPutDTO.contrasena")
-    @Named("fromClientePutDTO")
-    void fromClientePutDTO(ClientePutDTO dto, @MappingTarget Cliente entity);
-
-    @Mapping(target = "usuario", source = ".", qualifiedByName = "toUsuarioGetDTO")
-
-    @Named("toClienteGetDTO")
-    CustomerGetDTO toClienteGetDTO(Cliente entity);
-
+    @Mapping(target = "user", source = ".", qualifiedByName = "mapUserEntityToGetDto")
+    @Named("mapCustomerEntityToGetDto")
+    CustomerGetDTO mapCustomerEntityToGetDto(Customer entity);
 }
+

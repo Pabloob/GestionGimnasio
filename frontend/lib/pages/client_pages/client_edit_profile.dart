@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ClienteGetDTO.dart';
-import 'package:frontend/models/put/ClientePutDTO.dart';
-import 'package:frontend/models/put/UsuarioPutDTO.dart';
+import 'package:frontend/models/get/CustomerGetDTO.dart';
+import 'package:frontend/models/put/CustomerPutDTO.dart';
+import 'package:frontend/models/put/UserPutDTO.dart';
 import 'package:frontend/providers/cliente_providers.dart';
 import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/utils/utils.dart';
 import 'package:frontend/theme/app_theme.dart';
+
+import '../../utils/authService.dart';
 
 class ClientEditProfile extends ConsumerStatefulWidget {
   const ClientEditProfile({super.key});
@@ -37,7 +38,7 @@ class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
     );
   }
 
-  Widget _buildEditForm(ClienteGetDTO user, BuildContext context) {
+  Widget _buildEditForm(CustomerGetDTO user, BuildContext context) {
     return Form(
       key: _formKey,
       child: ListView(
@@ -47,7 +48,7 @@ class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
             context: context,
             icon: Icons.person,
             title: 'Nombre',
-            value: user.usuario.nombre,
+            value: user.user.name,
             validator: (value) => value?.isEmpty ?? true ? 'Campo requerido' : null,
             onSave: (newValue) => _updateName(newValue),
           ),
@@ -56,7 +57,7 @@ class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
             context: context,
             icon: Icons.email,
             title: 'Correo electrónico',
-            value: user.usuario.correo,
+            value: user.user.email,
             validator: (value) {
               if (value?.isEmpty ?? true) return 'Campo requerido';
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
@@ -71,7 +72,7 @@ class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
             context: context,
             icon: Icons.phone,
             title: 'Teléfono',
-            value: user.usuario.telefono,
+            value: user.user.phone,
             validator: (value) => value?.isEmpty ?? true ? 'Campo requerido' : null,
             onSave: (newValue) => _updatePhone(newValue),
           ),
@@ -208,12 +209,12 @@ class _ClientEditProfileState extends ConsumerState<ClientEditProfile> {
       final userId = await AuthService().getUserId();
       if (userId == null) throw Exception('Usuario no autenticado');
 
-      final cliente = ClientePutDTO(
-        usuarioPutDTO: UsuarioPutDTO(
-          nombre: field == 'nombre' ? value.trim() : null,
-          contrasena: field == 'contraseña' ? value.trim() : null,
-          correo: field == 'correo' ? value.trim() : null,
-          telefono: field == 'telefono' ? value.trim() : null,
+      final cliente = CustomerPutDTO(
+        userPutDTO: UserPutDTO(
+          name: field == 'nombre' ? value.trim() : null,
+          password: field == 'contraseña' ? value.trim() : null,
+          email: field == 'correo' ? value.trim() : null,
+          phone: field == 'telefono' ? value.trim() : null,
         ),
       );
 

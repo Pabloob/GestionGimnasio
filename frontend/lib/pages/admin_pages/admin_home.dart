@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/models/get/HorarioGetDTO.dart';
-import 'package:frontend/models/get/SalaGetDTO.dart';
-import 'package:frontend/models/get/TrabajadorGetDTO.dart';
+import 'package:frontend/models/get/FitnessClassGetDTO.dart';
+import 'package:frontend/models/get/ScheduleGetDTO.dart';
+import 'package:frontend/models/get/RoomGetDTO.dart';
+import 'package:frontend/models/get/StaffMemberGetDTO.dart';
 import 'package:frontend/providers/clase_provider.dart';
 import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/providers/horario_provider.dart';
@@ -28,28 +28,28 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage> {
       name: 'Trabajadores',
       icon: Icons.person,
       provider: AllTrabajadoresProvider,
-      builder: (data) => buildWorkerCard(data as TrabajadorGetDTO),
+      builder: (data) => buildWorkerCard(data as StaffMemberGetDTO),
     ),
     Section(
       id: 'clases',
       name: 'Clases',
       icon: Icons.fitness_center,
       provider: AllClassesProvider,
-      builder: (data) => buildClassCard(data as ClaseGetDTO),
+      builder: (data) => buildClassCard(data as FitnessClassGetDTO),
     ),
     Section(
       id: 'horarios',
       name: 'Horarios',
       icon: Icons.schedule,
       provider: AllHorariosProvider,
-      builder: (data) => buildHorarioCard(data as HorarioGetDTO),
+      builder: (data) => buildHorarioCard(data as ScheduleGetDTO),
     ),
     Section(
       id: 'salas',
       name: 'Salas',
       icon: Icons.room,
       provider: AllSalasProvider,
-      builder: (data) => buildSalaCard(data as SalaGetDTO),
+      builder: (data) => buildSalaCard(data as RoomGetDTO),
     ),
   ];
 
@@ -74,7 +74,7 @@ class _AdminHomePageState extends ConsumerState<AdminHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CommonWidgets.buildCustomTopMesage(
-                    user: user.usuario,
+                    user: user.user,
                     textoPrincipal: currentSection.name,
                   ),
 

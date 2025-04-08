@@ -13,13 +13,17 @@ import org.mapstruct.Named;
 public interface FitnessClassMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "className", source = "name")
+
     @Named("mapPostDtoToFitnessClassEntity")
     FitnessClass mapPostDtoToFitnessClassEntity(FitnessClassPostDTO dto);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "className", source = "name")
     @Named("updateFitnessClassEntityFromPutDto")
     void updateFitnessClassEntityFromPutDto(FitnessClassPutDTO dto, @MappingTarget FitnessClass entity);
 
+    @Mapping(target = "name", source = "className")
     @Named("mapFitnessClassEntityToGetDto")
     FitnessClassGetDTO mapFitnessClassEntityToGetDto(FitnessClass entity);
 }

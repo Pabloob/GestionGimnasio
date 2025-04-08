@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/post/SalaPostDTO.dart';
-import 'package:frontend/providers/clase_provider.dart';
+import 'package:frontend/models/post/RoomPostDTO.dart';
+import 'package:frontend/providers/common_providers.dart';
 import 'package:frontend/providers/sala_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,9 +71,9 @@ class _AddSalaFormState extends ConsumerState<AddSalaForm> {
     if (!_formKeyClase.currentState!.validate()) return;
 
     try {
-      final nuevaSala = SalaPostDTO(nombre: _nombreController.text);
+      final nuevaSala = RoomPostDTO(name: _nombreController.text);
 
-      await ref.read(registerSalaProvider(nuevaSala).future);
+      await ref.read(salaServiceProvider).createRoom(nuevaSala);
 
       if (mounted) {
         ref.invalidate(AllSalasProvider);

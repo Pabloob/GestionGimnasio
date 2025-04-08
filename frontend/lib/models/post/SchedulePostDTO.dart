@@ -1,6 +1,8 @@
+import 'package:frontend/models/enums.dart';
+
 class SchedulePostDTO {
   final int classId;
-  final String dayOfWeek;
+  final DayOfWeek dayOfWeek;
   final DateTime startTime;
   final DateTime endTime;
   final int roomId;
@@ -22,7 +24,7 @@ class SchedulePostDTO {
   factory SchedulePostDTO.fromJson(Map<String, dynamic> json) {
     return SchedulePostDTO(
       classId: json['classId'],
-      dayOfWeek: json['dayOfWeek'],
+      dayOfWeek: DayOfWeek.fromName(json['dayOfWeek']),
       startTime: DateTime.parse(json['startTime']),
       endTime: DateTime.parse(json['endTime']),
       roomId: json['roomId'],
@@ -35,7 +37,7 @@ class SchedulePostDTO {
   Map<String, dynamic> toJson() {
     return {
       'classId': classId,
-      'dayOfWeek': dayOfWeek,
+      'dayOfWeek': dayOfWeek.value,
       'startTime': startTime.toIso8601String(),
       'endTime': endTime.toIso8601String(),
       'roomId': roomId,

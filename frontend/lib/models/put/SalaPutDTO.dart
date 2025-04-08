@@ -1,11 +1,11 @@
-class SalaPutDTO {
+class RoomPutDTO {
   final String? nombre;
 
-  SalaPutDTO({this.nombre});
+  RoomPutDTO({this.nombre});
 
   // Factory para crear una instancia desde JSON
-  factory SalaPutDTO.fromJson(Map<String, dynamic> json) {
-    return SalaPutDTO(nombre: json['nombre']);
+  factory RoomPutDTO.fromJson(Map<String, dynamic> json) {
+    return RoomPutDTO(nombre: json['nombre']);
   }
 
   // Método para convertir el objeto a JSON

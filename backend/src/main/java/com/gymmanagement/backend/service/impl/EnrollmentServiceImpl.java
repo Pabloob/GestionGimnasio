@@ -11,6 +11,7 @@ import com.gymmanagement.backend.repository.CustomerRepository;
 import com.gymmanagement.backend.repository.EnrollmentRepository;
 import com.gymmanagement.backend.repository.FitnessClassRepository;
 import com.gymmanagement.backend.service.interfaces.EnrollmentService;
+import com.gymmanagement.backend.service.interfaces.FitnessClassService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CustomerRepository customerRepository;
     private final FitnessClassRepository fitnessClassRepository;
+    private final FitnessClassService fitnessClassService;
     private final EnrollmentMapper enrollmentMapper;
 
     @Override
@@ -53,7 +55,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new RuntimeException("Cannot enroll in an inactive class.");
         }
 
-        if (!fitnessClassRepository.hasAvailableSpots(fitnessClass.getId())) {
+        if (!fitnessClassService.hasAvailableSpots(fitnessClass.getId())) {
             throw new RuntimeException("No spots available in this class.");
         }
 

@@ -1,77 +1,62 @@
-import 'dart:io';
+// fitness_class_controller.dart
 
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/models/get/ClaseGetDTO.dart';
-import 'package:frontend/models/post/ClasePostDTO.dart';
-import 'package:frontend/models/put/ClasePutDTO.dart';
 
-class ApiClase {
+import '../models/get/FitnessClassGetDTO.dart';
+import '../models/post/FitnessClassPostDTO.dart';
+import '../models/put/FitnessClassPutDTO.dart';
+import 'api_service.dart';
+
+class FitnessClassController {
   final ApiService _apiService;
 
-  ApiClase({required ApiService apiService}) : _apiService = apiService;
+  FitnessClassController({required ApiService apiService}) : _apiService = apiService;
 
-  // Obtener todas las clases
-  Future<List<ClaseGetDTO>> obtenerTodos() async {
-    final response = await _apiService.get('/api/clases');
-    return (response as List)
-        .map((json) => ClaseGetDTO.fromJson(json))
-        .toList();
+  Future<List<FitnessClassGetDTO>> getAllClasses() async {
+    final response = await _apiService.get('/api/classes');
+    return (response as List).map((e) => FitnessClassGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener todas las clases activas
-  Future<List<ClaseGetDTO>> obtenerActivas() async {
-    final response = await _apiService.get('/api/clases/activas');
-    return (response as List)
-        .map((json) => ClaseGetDTO.fromJson(json))
-        .toList();
+  Future<List<FitnessClassGetDTO>> getActiveClasses() async {
+    final response = await _apiService.get('/api/classes/active');
+    return (response as List).map((e) => FitnessClassGetDTO.fromJson(e)).toList();
   }
 
-  // Obtener una clase por ID
-  Future<ClaseGetDTO> obtenerPorId(int id) async {
-    final response = await _apiService.get('/api/clases/$id');
-    return ClaseGetDTO.fromJson(response);
+  Future<FitnessClassGetDTO> getClassById(int id) async {
+    final response = await _apiService.get('/api/classes/$id');
+    return FitnessClassGetDTO.fromJson(response);
   }
 
-  // Obtener cupos disponibles de una clase
-  Future<int> obtenerCuposDisponibles(int id) async {
-    final response = await _apiService.get('/api/clases/$id/cupos-disponibles');
-    return response;
+  Future<int> getAvailableSpots(int id) async {
+    final response = await _apiService.get('/api/classes/$id/available-spots');
+    return response as int;
   }
 
-  // Obtener una clase por ID
-  Future<bool> tieneCuposDisponibles(int id) async {
-    final response = await _apiService.get('/api/clases/$id/tiene-cupos');
-    return response;
+  Future<bool> hasAvailableSpots(int id) async {
+    final response = await _apiService.get('/api/classes/$id/has-available-spots');
+    return response as bool;
   }
 
-  // Crear una nueva clase
-  Future<ClaseGetDTO> crearClase(ClasePostDTO clase) async {
-    try {
-      final response = await _apiService.post(
-        '/api/clases',
-        clase.toJson(),
-        requiresAuth: true,
-      );
-
-      return ClaseGetDTO.fromJson(response);
-    } catch (e) {
-      throw HttpException('No se pudo crear la clase: ${e.toString()}');
-    }
+  Future<FitnessClassGetDTO> createClass(FitnessClassPostDTO dto) async {
+    final response = await _apiService.post(
+      '/api/classes',
+      dto.toJson(),
+    );
+    return FitnessClassGetDTO.fromJson(response);
   }
 
-  // Actualizar una clase
-  Future<ClaseGetDTO> actualizarClase(int id, ClasePutDTO clase) async {
-    final response = await _apiService.put('/api/clases/$id', clase.toJson());
-    return ClaseGetDTO.fromJson(response);
+  Future<FitnessClassGetDTO> updateClass(int id, FitnessClassPutDTO dto) async {
+    final response = await _apiService.put(
+      '/api/classes/$id',
+      dto.toJson(),
+    );
+    return FitnessClassGetDTO.fromJson(response);
   }
 
-  //Borrar clase
-  Future<void> borrarClase(int id) async {
-    await _apiService.delete('/api/clases/$id');
+  Future<void> deleteClass(int id) async {
+    await _apiService.delete('/api/classes/$id');
   }
 
-  //Borrar clase
-  Future<void> toggleClaseStatus(int id) async {
-    await _apiService.patch('/api/clases/$id/toggle-status');
+  Future<void> toggleClassStatus(int id) async {
+    await _apiService.patch('/api/classes/$id/toggle-status');
   }
 }

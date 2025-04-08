@@ -4,8 +4,8 @@ import 'package:frontend/pages/about_pages/about_app.dart';
 import 'package:frontend/pages/about_pages/help_and_support.dart';
 import 'package:frontend/pages/client_pages/client_edit_profile.dart';
 import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/utils/utils.dart';
 
+import '../../utils/authService.dart';
 import '../components/common_widgets.dart';
 
 class ClientProfilePage extends ConsumerWidget {
@@ -20,14 +20,14 @@ class ClientProfilePage extends ConsumerWidget {
       error: (error, _) => Center(child: Text('Error: $error')),
       data:
           (user) => SingleChildScrollView(
-            child: Column(
-              children: [
-                CommonWidgets.buildCustomTopMesage(user: user.usuario),
-                _buildProfileOptions(context),
-                _buildMoreOptions(context),
-              ],
-            ),
-          ),
+        child: Column(
+          children: [
+            CommonWidgets.buildCustomTopMesage(user: user.user),
+            _buildProfileOptions(context),
+            _buildMoreOptions(context),
+          ],
+        ),
+      ),
     );
   }
 
@@ -41,11 +41,11 @@ class ClientProfilePage extends ConsumerWidget {
           trailing: const Icon(Icons.arrow_forward_ios),
           onTap:
               () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ClientEditProfile(),
-                ),
-              ),
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ClientEditProfile(),
+            ),
+          ),
         ),
         const Divider(),
         ListTile(
@@ -66,11 +66,11 @@ class ClientProfilePage extends ConsumerWidget {
           title: const Text('Ayuda y soporte'),
           onTap:
               () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HelpAndSupportPage(),
-                ),
-              ),
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HelpAndSupportPage(),
+            ),
+          ),
         ),
         const Divider(),
         ListTile(
@@ -78,9 +78,9 @@ class ClientProfilePage extends ConsumerWidget {
           title: const Text('Acerca de la app'),
           onTap:
               () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AboutAppPage()),
-              ),
+            context,
+            MaterialPageRoute(builder: (context) => const AboutAppPage()),
+          ),
         ),
       ],
     );

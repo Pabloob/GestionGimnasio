@@ -1,7 +1,7 @@
 package com.gymmanagement.backend.service.interfaces;
 
 import com.gymmanagement.backend.dto.UserLoginDTO;
-import com.gymmanagement.backend.dto.get.FitnessClassGetDTO;
+import com.gymmanagement.backend.dto.get.UserGetDTO;
 
 import java.util.List;
 
@@ -9,11 +9,11 @@ public interface UserService {
 
     Object authenticate(UserLoginDTO loginDTO);
 
-    FitnessClassGetDTO findById(Long id);
+    UserGetDTO findById(Long id);
 
-    FitnessClassGetDTO getByEmail(String email);
+    UserGetDTO getByEmail(String email);
 
-    List<FitnessClassGetDTO> getAll();
+    List<UserGetDTO> getAll();
 
     boolean existsByEmail(String email);
 

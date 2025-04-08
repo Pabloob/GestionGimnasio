@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/models/enums.dart';
 import 'package:frontend/models/post/TrabajadorPostDTO.dart';
-import 'package:frontend/models/post/UsuarioPostDTO.dart';
-import 'package:frontend/providers/trabajador_provider.dart';
+import 'package:frontend/models/post/UserPostDTO.dart';
 import 'package:frontend/pages/components/date_picker.dart';
+import 'package:frontend/providers/common_providers.dart';
+import 'package:frontend/providers/trabajador_provider.dart';
 import 'package:intl/intl.dart';
 
 import '../components/common_widgets.dart';
@@ -30,7 +31,7 @@ class _AddTrabajadorFormState extends ConsumerState<AddTrabajadorForm> {
   final TextEditingController _horaFinController = TextEditingController();
   final _formKeyTrabajador = GlobalKey<FormState>();
   DateTime? _selectedDate;
-  TipoTrabajador? _tipoTrabajador;
+  StaffType? _tipoTrabajador;
 
   @override
   void initState() {
@@ -116,7 +117,7 @@ class _AddTrabajadorFormState extends ConsumerState<AddTrabajadorForm> {
               validatorType: ValidatorType.name,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<TipoTrabajador>(
+            DropdownButtonFormField<StaffType>(
               value: _tipoTrabajador,
               decoration: InputDecoration(
                 labelText: "Tipo de trabajador",
@@ -124,8 +125,8 @@ class _AddTrabajadorFormState extends ConsumerState<AddTrabajadorForm> {
                 prefixIcon: Icon(Icons.work),
               ),
               items:
-                  TipoTrabajador.values.map((tipo) {
-                    return DropdownMenuItem<TipoTrabajador>(
+                  StaffType.values.map((tipo) {
+                    return DropdownMenuItem<StaffType>(
                       value: tipo,
                       child: Text(tipo.name),
                     );
@@ -188,23 +189,25 @@ class _AddTrabajadorFormState extends ConsumerState<AddTrabajadorForm> {
     }
 
     try {
-      final nuevoTrabajador = TrabajadorPostDTO(
-        usuario: UsuarioPostDTO(
-          nombre: _nombreController.text,
-          contrasena: _contrasenaController.text,
-          correo: _correoController.text,
-          telefono: _telefonoController.text,
-          fechaNacimiento: _selectedDate!,
-          tipoUsuario: TipoUsuario.TRABAJADOR,
-          activo: true,
+      final nuevoTrabajador = StaffMemberPostDTO(
+        user: UserPostDTO(
+          name: _nombreController.text,
+          password: _contrasenaController.text,
+          email: _correoController.text,
+          phone: _telefonoController.text,
+          birthDate: _selectedDate!,
+          userType: UserType.STAFF,
+          active: true,
         ),
-        direccion: _direccionController.text,
-        horaInicio: DateFormat("HH:mm").parse(_horaInicioController.text),
-        horaFin: DateFormat("HH:mm").parse(_horaFinController.text),
-        tipoTrabajador: _tipoTrabajador!,
+        address: _direccionController.text,
+        startTime: DateFormat("HH:mm").parse(_horaInicioController.text),
+        endTime: DateFormat("HH:mm").parse(_horaFinController.text),
+        staffType: _tipoTrabajador!,
       );
 
-      await ref.read(registerTrabajadorProvider(nuevoTrabajador).future);
+      await ref
+          .read(trabajadorServiceProvider)
+          .createStaffMember(nuevoTrabajador);
 
       if (mounted) {
         ref.invalidate(AllTrabajadoresProvider);

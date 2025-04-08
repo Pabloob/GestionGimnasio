@@ -3,11 +3,11 @@ package com.gymmanagement.backend.dto.get;
 import lombok.Data;
 
 @Data
-public class ClaseGetDTO {
+public class FitnessClassGetDTO {
     private Long id;
-    private String nombre;
-    private Integer capacidadMaxima;
-    private Double precio;
-    private String descripcion;
-    private boolean activa;
+    private String name;
+    private Integer maxCapacity;
+    private Double price;
+    private String description;
+    private boolean active;
 }

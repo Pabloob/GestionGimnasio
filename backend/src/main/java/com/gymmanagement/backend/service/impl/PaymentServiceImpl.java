@@ -116,4 +116,3 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.mapPaymentEntityToGetDto(canceled);
     }
 }
-2

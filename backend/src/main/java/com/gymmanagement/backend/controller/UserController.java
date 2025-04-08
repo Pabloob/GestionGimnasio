@@ -50,6 +50,8 @@ public class UserController {
 
             Object user = userService.authenticate(loginRequest);
 
+            System.out.println("User: " + user);
+
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("tokenType", "Bearer");
