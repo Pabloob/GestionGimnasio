@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/pages/about_pages/about_app.dart';
-import 'package:frontend/pages/about_pages/help_and_support.dart';
-import 'package:frontend/providers/common_providers.dart';
 
+import '../../providers/common_providers.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/authService.dart';
+import '../about_pages/about_app.dart';
+import '../about_pages/help_and_support.dart';
 import '../components/common_widgets.dart';
 
 class AdminProfilePage extends ConsumerWidget {

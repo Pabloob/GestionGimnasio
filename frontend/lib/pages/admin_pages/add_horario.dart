@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/enums.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/get/RoomGetDTO.dart';
-import 'package:frontend/models/get/StaffMemberGetDTO.dart';
-import 'package:frontend/models/post/SchedulePostDTO.dart';
-import 'package:frontend/providers/clase_provider.dart';
-import 'package:frontend/providers/horario_provider.dart';
-import 'package:frontend/providers/sala_provider.dart';
-import 'package:frontend/providers/trabajador_provider.dart';
 import 'package:intl/intl.dart';
 
-import '../components/date_picker.dart';
+import '../../models/enums.dart';
+import '../../models/get/FitnessClassGetDTO.dart';
+import '../../models/get/RoomGetDTO.dart';
+import '../../models/get/StaffMemberGetDTO.dart';
+import '../../models/post/SchedulePostDTO.dart';
+import '../../providers/clase_provider.dart';
+import '../../providers/horario_provider.dart';
+import '../../providers/sala_provider.dart';
+import '../../providers/trabajador_provider.dart';
 import '../components/common_widgets.dart';
+import '../components/date_picker.dart';
 
 class AddHorarioForm extends ConsumerStatefulWidget {
   final VoidCallback? onEnrollmentSuccess;
@@ -27,7 +27,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
   final TextEditingController _horaInicioController = TextEditingController();
   final TextEditingController _horaFinController = TextEditingController();
   final TextEditingController _fechaDeInicioController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _fechaDeFinController = TextEditingController();
 
   DateTime? _selectedFechaInicio;
@@ -75,10 +75,10 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
   }
 
   Widget _buildFormulario(
-      List<StaffMemberGetDTO> instructores,
-      List<FitnessClassGetDTO> clases,
-      List<RoomGetDTO> salas,
-      ) {
+    List<StaffMemberGetDTO> instructores,
+    List<FitnessClassGetDTO> clases,
+    List<RoomGetDTO> salas,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Form(
@@ -126,12 +126,6 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
               controller: _horaFinController,
               label: "Hora de fin (HH:mm)",
             ),
-            const SizedBox(height: 16),
-            CommonWidgets.buildTimeField(
-              context: context,
-              controller: _horaFinController,
-              label: "Hora de fin (HH:mm)",
-            ),
             const SizedBox(height: 24),
             DatePickerWidget(
               controller: _fechaDeInicioController,
@@ -140,7 +134,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
                 setState(() {
                   _selectedFechaInicio = selectedDate;
                   _fechaDeInicioController.text =
-                  "${_selectedFechaInicio!.day}/${_selectedFechaInicio!.month}/${_selectedFechaInicio!.year}";
+                      "${_selectedFechaInicio!.day}/${_selectedFechaInicio!.month}/${_selectedFechaInicio!.year}";
                 });
               },
               future: true,
@@ -153,7 +147,7 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
                 setState(() {
                   _selectedFechaFin = selectedDate;
                   _fechaDeFinController.text =
-                  "${_selectedFechaFin!.day}/${_selectedFechaFin!.month}/${_selectedFechaFin!.year}";
+                      "${_selectedFechaFin!.day}/${_selectedFechaFin!.month}/${_selectedFechaFin!.year}";
                 });
               },
               future: true,
@@ -256,25 +250,25 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
           spacing: 8,
           runSpacing: 8,
           children:
-          DayOfWeek.values.map((dia) {
-            final isSelected = _diasSeleccionados.contains(dia);
-            return FilterChip(
-              label: Text(dia.name),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  selected
-                      ? _diasSeleccionados.add(dia)
-                      : _diasSeleccionados.remove(dia);
-                });
-              },
-              selectedColor: const Color(0xFF7D8C88),
-              checkmarkColor: Colors.white,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-              ),
-            );
-          }).toList(),
+              DayOfWeek.values.map((dia) {
+                final isSelected = _diasSeleccionados.contains(dia);
+                return FilterChip(
+                  label: Text(dia.name),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      selected
+                          ? _diasSeleccionados.add(dia)
+                          : _diasSeleccionados.remove(dia);
+                    });
+                  },
+                  selectedColor: const Color(0xFF7D8C88),
+                  checkmarkColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                  ),
+                );
+              }).toList(),
         ),
       ],
     );
@@ -302,12 +296,12 @@ class _AddHorarioFormState extends ConsumerState<AddHorarioForm> {
       value: value,
       isExpanded: true,
       items:
-      items.map((item) {
-        return DropdownMenuItem<int>(
-          value: valueBuilder(item),
-          child: Text(itemBuilder(item)),
-        );
-      }).toList(),
+          items.map((item) {
+            return DropdownMenuItem<int>(
+              value: valueBuilder(item),
+              child: Text(itemBuilder(item)),
+            );
+          }).toList(),
       onChanged: onChanged,
       validator: (value) => value == null ? "Este campo es obligatorio" : null,
     );

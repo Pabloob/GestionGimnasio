@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/enums.dart';
-import 'package:frontend/models/post/TrabajadorPostDTO.dart';
-import 'package:frontend/models/post/UserPostDTO.dart';
-import 'package:frontend/pages/components/date_picker.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/providers/trabajador_provider.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/enums.dart';
+import '../../models/post/TrabajadorPostDTO.dart';
+import '../../models/post/UserPostDTO.dart';
+import '../../providers/common_providers.dart';
+import '../../providers/trabajador_provider.dart';
 import '../components/common_widgets.dart';
+import '../components/date_picker.dart';
 
 class AddTrabajadorForm extends ConsumerStatefulWidget {
   final VoidCallback? onEnrollmentSuccess;

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/pages/admin_pages/add_clase.dart';
-import 'package:frontend/pages/admin_pages/add_horario.dart';
-import 'package:frontend/pages/admin_pages/add_sala.dart';
-import 'package:frontend/pages/admin_pages/add_trabajador.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/theme/app_theme.dart';
 
+import '../../providers/common_providers.dart';
+import '../../theme/app_theme.dart';
 import '../components/common_widgets.dart';
+import 'add_clase.dart';
+import 'add_horario.dart';
+import 'add_sala.dart';
+import 'add_trabajador.dart';
 
 class AdminAddPage extends ConsumerStatefulWidget {
   const AdminAddPage({super.key, this.onEnrollmentSuccess});

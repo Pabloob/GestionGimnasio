@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/post/FitnessClassPostDTO.dart';
-import 'package:frontend/providers/clase_provider.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/theme/app_theme.dart';
 
+import '../../models/post/FitnessClassPostDTO.dart';
+import '../../providers/clase_provider.dart';
+import '../../providers/common_providers.dart';
+import '../../theme/app_theme.dart';
 import '../components/common_widgets.dart';
 
 class AddClaseForm extends ConsumerStatefulWidget {

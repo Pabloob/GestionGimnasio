@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/post/RoomPostDTO.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/providers/sala_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/post/RoomPostDTO.dart';
+import '../../providers/common_providers.dart';
+import '../../providers/sala_provider.dart';
 import '../components/common_widgets.dart';
 
 class AddSalaForm extends ConsumerStatefulWidget {
@@ -43,7 +44,7 @@ class _AddSalaFormState extends ConsumerState<AddSalaForm> {
               icon: Icons.person,
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
-              label: "Nombre de la clase",
+              label: "Nombre de la sala",
               validatorType: ValidatorType.name,
             ),
             const SizedBox(height: 24),
@@ -58,7 +59,7 @@ class _AddSalaFormState extends ConsumerState<AddSalaForm> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text("Guardar Clase"),
+                child: const Text("Guardar sala"),
               ),
             ),
           ],

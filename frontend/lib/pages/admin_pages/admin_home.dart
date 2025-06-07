@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/get/ScheduleGetDTO.dart';
-import 'package:frontend/models/get/RoomGetDTO.dart';
-import 'package:frontend/models/get/StaffMemberGetDTO.dart';
-import 'package:frontend/providers/clase_provider.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/providers/horario_provider.dart';
-import 'package:frontend/providers/sala_provider.dart';
-import 'package:frontend/providers/trabajador_provider.dart';
-import 'package:frontend/theme/app_theme.dart';
 
+import '../../models/get/FitnessClassGetDTO.dart';
+import '../../models/get/RoomGetDTO.dart';
+import '../../models/get/ScheduleGetDTO.dart';
+import '../../models/get/StaffMemberGetDTO.dart';
+import '../../providers/clase_provider.dart';
+import '../../providers/common_providers.dart';
+import '../../providers/horario_provider.dart';
+import '../../providers/sala_provider.dart';
+import '../../providers/trabajador_provider.dart';
+import '../../theme/app_theme.dart';
 import '../components/basic_cards.dart';
 import '../components/common_widgets.dart';
 

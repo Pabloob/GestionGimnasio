@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/admin_pages/admin_add.dart';
-import 'package:frontend/pages/admin_pages/admin_home.dart';
-import 'package:frontend/pages/admin_pages/admin_profile.dart';
-import 'package:frontend/theme/app_theme.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
+import '../../theme/app_theme.dart';
 import '../../utils/authService.dart';
+import 'admin_add.dart';
+import 'admin_home.dart';
+import 'admin_profile.dart';
 
 class AdminMainScreen extends StatefulWidget {
   const AdminMainScreen({super.key});
