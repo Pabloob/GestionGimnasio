@@ -50,8 +50,6 @@ public class UserController {
 
             Object user = userService.authenticate(loginRequest);
 
-            System.out.println("User: " + user);
-
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("tokenType", "Bearer");
@@ -67,14 +65,12 @@ public class UserController {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "error", "Unauthorized",
                             "message", "Invalid email or password"
                     ));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of(
                             "error", "Internal Server Error",
