@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/post/PaymentPostDTO.dart';
-import 'package:frontend/pages/components/add_clase_card.dart';
-import 'package:frontend/providers/cliente_providers.dart';
-import 'package:frontend/providers/common_providers.dart';
-
+import '../../models/get/FitnessClassGetDTO.dart';
 import '../../models/post/EnrollmentPostDTO.dart';
+import '../../models/post/PaymentPostDTO.dart';
+import '../../providers/cliente_providers.dart';
+import '../../providers/common_providers.dart';
+import '../components/add_clase_card.dart';
 import '../components/common_widgets.dart';
 
 class ClientAddClassPage extends ConsumerWidget {

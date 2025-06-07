@@ -1,6 +1,7 @@
+import 'package:GymHub/pages/auth_pages/register.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/auth_pages/register.dart';
-import 'package:frontend/pages/auth_pages/login.dart';
+
+import 'login.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/CustomerGetDTO.dart';
-import 'package:frontend/models/put/CustomerPutDTO.dart';
-import 'package:frontend/models/put/UserPutDTO.dart';
-import 'package:frontend/providers/cliente_providers.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/theme/app_theme.dart';
 
+import '../../models/get/CustomerGetDTO.dart';
+import '../../models/put/CustomerPutDTO.dart';
+import '../../models/put/UserPutDTO.dart';
+import '../../providers/cliente_providers.dart';
+import '../../providers/common_providers.dart';
+import '../../theme/app_theme.dart';
 import '../../utils/authService.dart';
 
 class ClientEditProfile extends ConsumerStatefulWidget {

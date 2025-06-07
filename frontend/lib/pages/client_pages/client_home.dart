@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/pages/components/clase_card.dart';
-import 'package:frontend/providers/cliente_providers.dart';
+import 'package:GymHub/pages/components/clase_card.dart';
+import 'package:GymHub/providers/cliente_providers.dart';
 
 import '../../providers/common_providers.dart';
 import '../components/common_widgets.dart';

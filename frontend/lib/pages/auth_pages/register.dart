@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/post/CustomerPostDTO.dart';
-import 'package:frontend/models/post/UserPostDTO.dart';
-import 'package:frontend/providers/cliente_providers.dart';
 
 import '../../models/enums.dart';
+import '../../models/post/CustomerPostDTO.dart';
+import '../../models/post/UserPostDTO.dart';
+import '../../providers/cliente_providers.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/utils.dart';
 import '../components/common_widgets.dart';

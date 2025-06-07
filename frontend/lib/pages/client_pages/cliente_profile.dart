@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/pages/about_pages/about_app.dart';
-import 'package:frontend/pages/about_pages/help_and_support.dart';
-import 'package:frontend/pages/client_pages/client_edit_profile.dart';
-import 'package:frontend/providers/common_providers.dart';
 
+import '../../providers/common_providers.dart';
 import '../../utils/authService.dart';
+import '../about_pages/about_app.dart';
+import '../about_pages/help_and_support.dart';
 import '../components/common_widgets.dart';
+import 'client_edit_profile.dart';
 
 class ClientProfilePage extends ConsumerWidget {
   const ClientProfilePage({super.key});

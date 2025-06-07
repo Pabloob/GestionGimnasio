@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/pages/components/common_widgets.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/theme/app_theme.dart';
-import 'package:frontend/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/UserLoginDTO.dart';
+import '../../providers/common_providers.dart';
+import '../../theme/app_theme.dart';
 import '../../utils/authService.dart';
+import '../../utils/utils.dart';
+import '../components/common_widgets.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});

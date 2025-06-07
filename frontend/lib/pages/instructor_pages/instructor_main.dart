@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/instructor_pages/instructor_home.dart';
-import 'package:frontend/theme/app_theme.dart';
-import 'package:frontend/utils/utils.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
+import '../../theme/app_theme.dart';
 import '../../utils/authService.dart';
+import 'instructor_home.dart';
 
 class InstructorMainScreen extends StatefulWidget {
   const InstructorMainScreen({super.key});

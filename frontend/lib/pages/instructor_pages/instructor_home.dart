@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ScheduleGetDTO.dart';
-import 'package:frontend/providers/horario_provider.dart';
-import 'package:frontend/providers/common_providers.dart';
-import 'package:frontend/theme/app_theme.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import '../../models/get/ScheduleGetDTO.dart';
+import '../../providers/common_providers.dart';
+import '../../providers/horario_provider.dart';
+import '../../theme/app_theme.dart';
 
 class InstructorHomePage extends ConsumerStatefulWidget {
   const InstructorHomePage({super.key});
@@ -41,25 +42,25 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
         child: Text('Error: $error', style: AppTheme.errorText),
       ),
       data: (user) {
-        final horariosAsync = ref.watch(getByInstructor(user.usuario.id));
+        final horariosAsync = ref.watch(getByInstructor(user.user.id));
 
         return horariosAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(
             child: Text('Error: $error', style: AppTheme.errorText),
           ),
-          data: (horarios) {
-            _calculateDateRange(horarios);
-            _processHorarios(horarios);
+            data: (horarios) {
+              _calculateDateRange(horarios);
+              _processHorarios(horarios);
 
-            return Column(
-              children: [
-                _buildCalendar(),
-                const SizedBox(height: 16),
-                _buildHorariosList(),
-              ],
-            );
-          },
+              return Column(
+                children: [
+                  _buildCalendar(),
+                  const SizedBox(height: 16),
+                  if (horarios.isNotEmpty) _buildHorariosList(),
+                ],
+              );
+            },
         );
       },
     );
@@ -67,23 +68,28 @@ class _InstructorHomePageState extends ConsumerState<InstructorHomePage> {
 
   void _calculateDateRange(List<ScheduleGetDTO> horarios) {
     if (horarios.isNotEmpty) {
-      _firstDay = horarios
-          .map((h) => h.startDate)
-          .reduce((a, b) => a.isBefore(b) ? a : b);
-      _lastDay = horarios
-          .map((h) => h.endDate)
-          .reduce((a, b) => a.isAfter(b) ? a : b);
+      _firstDay = horarios.map((h) => h.startDate).reduce((a, b) => a.isBefore(b) ? a : b);
+      _lastDay = horarios.map((h) => h.endDate).reduce((a, b) => a.isAfter(b) ? a : b);
     } else {
-      _firstDay = DateTime.now();
-      _lastDay = DateTime.now().add(const Duration(days: 30));
+      final now = DateTime.now();
+      _firstDay = DateTime(now.year, now.month, 1);
+      _lastDay = DateTime(now.year, now.month + 1, 0);
     }
 
+    // Ajustar focusedDay para que esté dentro del rango
+    if (_focusedDay == null || _focusedDay!.isBefore(_firstDay!) || _focusedDay!.isAfter(_lastDay!)) {
+      _focusedDay = DateTime.now();
+    }
+
+    // Deseleccionar día si no está dentro del rango
     if (_selectedDay != null &&
-        (_selectedDay!.isBefore(_firstDay!) ||
-            _selectedDay!.isAfter(_lastDay!))) {
+        (_selectedDay!.isBefore(_firstDay!) || _selectedDay!.isAfter(_lastDay!))) {
       _selectedDay = null;
     }
   }
+
+
+
 
   void _processHorarios(List<ScheduleGetDTO> horarios) {
     _horariosPorDia.clear();
