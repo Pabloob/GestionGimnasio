@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/get/ScheduleGetDTO.dart';
-import 'package:frontend/models/get/RoomGetDTO.dart';
-import 'package:frontend/models/get/StaffMemberGetDTO.dart';
-import 'package:frontend/theme/app_theme.dart';
+
+import '../../models/get/FitnessClassGetDTO.dart';
+import '../../models/get/RoomGetDTO.dart';
+import '../../models/get/ScheduleGetDTO.dart';
+import '../../models/get/StaffMemberGetDTO.dart';
+import '../../theme/app_theme.dart';
 
 Widget buildClassCard(FitnessClassGetDTO clase) {
   return Card(

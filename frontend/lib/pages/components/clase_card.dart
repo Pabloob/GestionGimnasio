@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/notifications/NotiService.dart';
-import 'package:frontend/providers/horario_provider.dart';
-import 'package:frontend/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/get/FitnessClassGetDTO.dart';
 import '../../models/get/ScheduleGetDTO.dart';
+import '../../notifications/NotiService.dart';
+import '../../providers/horario_provider.dart';
+import '../../theme/app_theme.dart';
 
 class ClassCard extends ConsumerStatefulWidget {
   final FitnessClassGetDTO clase;
