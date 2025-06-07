@@ -1,5 +1,5 @@
-import 'package:frontend/models/enums.dart';
 
+import '../enums.dart';
 import 'UserPutDTO.dart';
 
 class StaffMemberPutDTO {

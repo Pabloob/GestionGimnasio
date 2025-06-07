@@ -1,4 +1,5 @@
-import 'package:frontend/models/enums.dart';
+
+import '../enums.dart';
 
 class UserPostDTO {
   final String name;

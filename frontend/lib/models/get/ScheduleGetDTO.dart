@@ -1,8 +1,9 @@
-import 'package:frontend/models/enums.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/get/RoomGetDTO.dart';
-import 'package:frontend/models/get/StaffMemberGetDTO.dart';
 import 'package:intl/intl.dart';
+
+import '../enums.dart';
+import 'FitnessClassGetDTO.dart';
+import 'RoomGetDTO.dart';
+import 'StaffMemberGetDTO.dart';
 
 class ScheduleGetDTO {
   final int id;

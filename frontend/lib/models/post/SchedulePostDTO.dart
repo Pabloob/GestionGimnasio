@@ -1,4 +1,5 @@
-import 'package:frontend/models/enums.dart';
+
+import '../enums.dart';
 
 class SchedulePostDTO {
   final int classId;
