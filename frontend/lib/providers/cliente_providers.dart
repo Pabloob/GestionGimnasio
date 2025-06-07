@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/CustomerGetDTO.dart';
-import 'package:frontend/models/get/EnrollmentGetDTO.dart';
-import 'package:frontend/models/get/FitnessClassGetDTO.dart';
-import 'package:frontend/models/post/CustomerPostDTO.dart';
-import 'package:frontend/models/put/CustomerPutDTO.dart';
-import 'package:frontend/providers/common_providers.dart';
+
+import '../models/get/CustomerGetDTO.dart';
+import '../models/get/EnrollmentGetDTO.dart';
+import '../models/get/FitnessClassGetDTO.dart';
+import '../models/post/CustomerPostDTO.dart';
+import '../models/put/CustomerPutDTO.dart';
+import 'common_providers.dart';
+
 
 final clienteSelectedClasesProvider =
 StateProvider.autoDispose<List<FitnessClassGetDTO>>((ref) => []);
@@ -21,7 +23,7 @@ FutureProvider.autoDispose<List<FitnessClassGetDTO>>((ref) async {
   );
 
   return allClasses
-      .where((clase) => !inscripciones.any((c) => c.id == clase.id))
+      .where((clase) => !inscripciones.any((c) => c.fitnessClass.id == clase.id))
       .toList();
 });
 

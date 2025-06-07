@@ -1,15 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/apis/api_usuario.dart';
-import 'package:frontend/pages/auth_pages/welcome.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../apis/api_service.dart';
+import '../apis/api_usuario.dart';
 import '../models/get/CustomerGetDTO.dart';
 import '../models/get/StaffMemberGetDTO.dart';
 import '../pages/admin_pages/admin_main.dart';
+import '../pages/auth_pages/welcome.dart';
 import '../pages/client_pages/client_main.dart';
 import '../pages/instructor_pages/instructor_main.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/RoomGetDTO.dart';
-import 'package:frontend/providers/common_providers.dart';
+import 'package:GymHub/models/get/RoomGetDTO.dart';
+import 'package:GymHub/providers/common_providers.dart';
 
 
 final AllSalasProvider = FutureProvider.autoDispose<List<RoomGetDTO>>((

@@ -8,7 +8,7 @@ class ApiService {
   final String _baseUrl;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  ApiService({String baseUrl = 'http://192.168.1.120:8080'}) : _baseUrl = baseUrl;
+  ApiService({String baseUrl = 'http://192.168.1.20:8080'}) : _baseUrl = baseUrl;
 
   // Método genérico para manejar solicitudes HTTP
   Future<dynamic> _request(

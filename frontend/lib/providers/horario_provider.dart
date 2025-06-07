@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/models/get/ScheduleGetDTO.dart';
-import 'package:frontend/models/post/SchedulePostDTO.dart';
-import 'package:frontend/providers/common_providers.dart';
+import 'package:GymHub/models/get/ScheduleGetDTO.dart';
+import 'package:GymHub/models/post/SchedulePostDTO.dart';
+import 'package:GymHub/providers/common_providers.dart';
 
 final AllHorariosProvider = FutureProvider.autoDispose<List<ScheduleGetDTO>>((
   ref,

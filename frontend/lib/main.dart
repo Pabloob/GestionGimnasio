@@ -1,7 +1,7 @@
+import 'package:GymHub/pages/auth_pages/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/notifications/NotiService.dart';
-import 'package:frontend/pages/auth_pages/welcome.dart';
+import 'notifications/NotiService.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'GymHub',
       theme: ThemeData(
         fontFamily: "Poppins",

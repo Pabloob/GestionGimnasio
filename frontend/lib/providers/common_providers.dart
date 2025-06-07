@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:frontend/apis/api_clase.dart';
-import 'package:frontend/apis/api_cliente.dart';
-import 'package:frontend/apis/api_horario.dart';
-import 'package:frontend/apis/api_inscripcion.dart';
-import 'package:frontend/apis/api_pago.dart';
-import 'package:frontend/apis/api_sala.dart';
-import 'package:frontend/apis/api_service.dart';
-import 'package:frontend/apis/api_trabajador.dart';
-import 'package:frontend/apis/api_usuario.dart';
+import 'package:GymHub/apis/api_clase.dart';
+import 'package:GymHub/apis/api_cliente.dart';
+import 'package:GymHub/apis/api_horario.dart';
+import 'package:GymHub/apis/api_inscripcion.dart';
+import 'package:GymHub/apis/api_pago.dart';
+import 'package:GymHub/apis/api_sala.dart';
+import 'package:GymHub/apis/api_service.dart';
+import 'package:GymHub/apis/api_trabajador.dart';
+import 'package:GymHub/apis/api_usuario.dart';
 
 import '../utils/authService.dart';
 

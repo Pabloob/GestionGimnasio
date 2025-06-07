@@ -1,8 +1,8 @@
 // room_controller.dart
-import 'package:frontend/models/put/SalaPutDTO.dart';
 
 import '../models/get/RoomGetDTO.dart';
 import '../models/post/RoomPostDTO.dart';
+import '../models/put/SalaPutDTO.dart';
 import 'api_service.dart';
 
 class RoomController {
